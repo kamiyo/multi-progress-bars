@@ -1,0 +1,11 @@
+{
+  "name": "multi-progress-bars",
+  "version": "1.0.0",
+  "description": "Multiple progress bars with option for spinners",
+  "main": "dist/multi-progress-bars.cjs.js",
+  "scripts": {
+    "test": "node test/build/test.js"
+  },
+  "author": "Sean Chen <kamiyo@gmail.com>",
+  "license": "MIT"
+}
