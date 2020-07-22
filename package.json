@@ -9,9 +9,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "rollup -c",
-    "watch": "rollup -cw",
-    "test": "jest"
+    "build": "rollup -c"
   },
   "author": "Sean Chen <kamiyo@gmail.com>",
   "license": "MIT",
