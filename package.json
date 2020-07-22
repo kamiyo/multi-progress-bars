@@ -1,11 +1,29 @@
 {
   "name": "multi-progress-bars",
   "version": "1.0.0",
-  "description": "Multiple progress bars with option for spinners",
+  "description": "Multiple progress bars with option for indefinite spinners",
   "main": "dist/multi-progress-bars.cjs.js",
+  "module": "dist/multi-progress-bars.es.js",
+  "types": "dist/multi-progress-bars.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "node test/build/test.js"
+    "build": "rollup -c",
+    "watch": "rollup -cw",
+    "test": "jest"
   },
   "author": "Sean Chen <kamiyo@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "12",
+    "@wessberg/rollup-plugin-ts": "^1.2.28",
+    "rollup": "^2.22.1",
+    "rollup-plugin-typescript2": "^0.27.1",
+    "tslib": "^2.0.0",
+    "typescript": "^3.9.7"
+  },
+  "dependencies": {
+    "chalk": "^4.1.0"
+  }
 }

@@ -1,0 +1,21 @@
+{
+    "extends": "../tsconfig-base.json",
+    "compilerOptions": {
+        "declaration": true,
+        "declarationDir": "../dist",
+        "moduleResolution": "Node",
+        "module": "es6",
+        "noImplicitAny": true,
+        "target": "es6",
+        "outDir": "../dist",
+        "esModuleInterop": true,
+        "composite": true,
+        "rootDir": "../src"
+    },
+    "types": [
+        "node"
+    ],
+    "include": [
+        "../src/**/*"
+    ]
+}
