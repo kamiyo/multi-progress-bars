@@ -59,7 +59,7 @@ Check out the example directory for a working example.
 
 ### `new MultiProgressBar(options)`
 
-options object (all optional):
+`options` `object` (all optional):
  * `stream` `<TTY.WriteStream>` Can be `process.stdout` or `process.stderr`. default = `process.stdout`
  * `spinnerFPS` `<number>` The FPS to update the spinner. default = `10`
  * `numCrawlers` `<number>` The number of crawlers for the infinite spinner. Omit if providing on spinner generator fn. default = `4`
@@ -67,3 +67,56 @@ options object (all optional):
  * `spinnerGenerator` `<(t: number, width: number) => string>` A function that takes the current timestamp and total width and returns a string. default = `mpb.hilbertSpinner`
  * `initMessage` `<string>` A persistent message to display above the bars. default = `'$ ' + process.argv.map((arg) => { return path.parse(arg).name; }).join(' ');`
 
+### `mpb.addTask(name, options)`
+
+`name` `string` Task name. All subsequent actions on the task will be called with this same name.
+
+`options` `object`:
+ * `type` `<'percentage' | 'indefinite'>` required.
+ * `index` `<number>` required. default = increment from previous || 0.
+ * `percentage` `<number>` optional. The starting percentage (0 to 1). default = `0`
+ * `message` `<string>` optional. A message to print to the right of the bar. default = `''`
+ * `barColorFn` `<(s: string) => string>` optional. A function that transforms the bar. Useful for coloring the bar with `chalk.js` or `colors.js`. default = `(s) => s`;
+
+### `mpb.incrementTask(name, options)`
+
+`name` `string` Task name.
+
+`options` `object` (unset properties will not affect change unless a default exists):
+ * `message` `<string>` optional. A message to print to the right of the bar.
+ * `percentage` `<number>` optional. The amount to increment by. default = `0.01`
+ * `barColorFn` `<(s: string) => string>` optional. A function that transforms the bar.
+
+### `mpb.updateTask(name, options)`
+
+`name` `string` Task name.
+
+`options` `object` (unset properties will not affect change):
+ * `message` `<string>` optional. A message to print to the right of the bar.
+ * `percentage` `<number>` optional. The amount to change the percentage to.
+ * `barColorFn` `<(s: string) => string>` optional. A function that transforms the bar.
+
+## `mpb.done(name, options)`
+
+`name` `string` Task name.
+
+`options` `object` (unset properties will not affect change):
+ * `message` `<string>` optional. A message to print to the right of the bar. default = `chalk.green('Finished')`
+ * `barColorFn` `<(s: string) => string>` optional. A function that transforms the bar.
+
+### `mpb.restart(name, options)`
+
+`name` `string` Task name.
+
+`options` `object` (unset properties will not affect change):
+ * `message` `<string>` optional. A message to print to the right of the bar.
+ * `barColorFn` `<(s: string) => string>` optional. A function that transforms the bar.
+
+### `mpb.promise`
+
+`<Promise>` A promise that will be resolved when all tasks are `done`. This allows you to defer rendering of reporters until after, which prevents write race conditions that mess up the bar rendering. The promise will be reset if any tasks are restarted.
+
+## TODO
+* Decouple hilbertSpinner from the instance.
+* Allow custom bar format
+* Allow custom progress format

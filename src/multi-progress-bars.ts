@@ -247,17 +247,23 @@ export class MultiProgressBars {
         this.stream.cursorTo(0, Object.entries(this.tasks).length + this.initialLines);
     }
 
-    public incrementTask(name: string, options: Pick<UpdateOptions, 'message' | 'barColorFn'> = {}) {
+    public incrementTask(
+        name: string,
+        {
+            percentage = 0.01,
+            ...options
+        }: UpdateOptions = {}
+    ) {
         if (this.tasks[name] === undefined) throw new ReferenceError('Task does not exist.')
         if (this.tasks[name].done) {
             return;
         }
-        if (isAboutEqualTo(this.tasks[name].percentage, 1)) {
+        if (isAboutEqualTo(this.tasks[name].percentage, 1) || this.tasks[name].percentage > 1) {
             this.done(name, options);
         } else {
             this.updateTask(name, {
                 ...options,
-                percentage: this.tasks[name].percentage + 0.01,
+                percentage: this.tasks[name].percentage + percentage,
             });
         }
     }
