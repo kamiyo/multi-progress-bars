@@ -57,10 +57,6 @@ export interface CtorOptions {
     initMessage?: string;
 }
 
-const isAboutEqualTo = (a: number, b: number) => {
-    return (Math.abs(a - b) < 1e-6);
-}
-
 export class MultiProgressBars {
     private tasks: Tasks = {};
     private stream: WriteStream;
@@ -259,7 +255,7 @@ export class MultiProgressBars {
         if (this.tasks[name].done) {
             return;
         }
-        if (isAboutEqualTo(this.tasks[name].percentage, 1) || this.tasks[name].percentage > 1) {
+        if (this.tasks[name].percentage + percentage > 1) {
             this.done(name, options);
         } else {
             this.updateTask(name, {
@@ -273,13 +269,18 @@ export class MultiProgressBars {
         if (this.tasks[name] === undefined) throw new ReferenceError('Task does not exist.')
         const task = this.tasks[name];
 
+        // Going over 1(00%) calls done
+        if (options.percentage !== undefined) {
+            this.done(name, options);
+            return;
+        }
         this.tasks[name] = {
             ...task,
             ...options,
+            done: false,
         };
 
         if (task.type === 'indefinite') {
-            this.tasks[name].done = false;
             if (!this.intervalID) {
                 this.t = 0;
                 this.intervalID = setInterval(() => this.renderIndefinite(), 1000 / this.spinnerFPS);
