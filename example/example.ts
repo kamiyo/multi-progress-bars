@@ -7,7 +7,9 @@ const main = async () => {
     const task1 = 'Task 1';
     const task2 = 'Task 2';
     const taskInf = 'Task \u221e';
-    const mpb = new MultiProgressBars();
+    const mpb = new MultiProgressBars({
+        initMessage: '$ node build-stuff.js'
+    });
 
     mpb.addTask(task1, { type: 'percentage', index: 0, barColorFn: chalk.yellow });
     mpb.addTask(task2, { type: 'percentage', index: 1, barColorFn: chalk.blue });
@@ -29,9 +31,9 @@ const main = async () => {
             mpb.updateTask(taskInf, { message: 'Restarted' });
             timeoutId = setTimeout(() => {
                 mpb.done(taskInf);
-            }, 5000);
+            }, 3000);
         }, 2000);
-    }, 10000);
+    }, 5000);
 
     await mpb.promise;
     clearInterval(timerId);

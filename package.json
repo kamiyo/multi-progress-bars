@@ -10,7 +10,9 @@
   ],
   "scripts": {
     "build": "rollup -c",
-    "prepublishOnly": "yarn build"
+    "prepublishOnly": "yarn build",
+    "buildExample": "yarn tsc -b example",
+    "runExample": "yarn build && yarn buildExample && yarn node example/example.js"
   },
   "author": "Sean Chen <kamiyo@gmail.com>",
   "license": "MIT",

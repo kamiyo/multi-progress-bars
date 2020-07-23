@@ -270,7 +270,7 @@ export class MultiProgressBars {
         const task = this.tasks[name];
 
         // Going over 1(00%) calls done
-        if (options.percentage !== undefined) {
+        if (options.percentage !== undefined && options.percentage > 1) {
             this.done(name, options);
             return;
         }

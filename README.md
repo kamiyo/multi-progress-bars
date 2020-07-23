@@ -1,5 +1,5 @@
 # multi-progress-bars
-A node library for displaying multiple progress bars, with an option for displaying indefinite tasks by using a spinner. Works well with gulp.js and/or webpack.
+A node library for displaying multiple progress bars, with an option for displaying indefinite tasks by using a spinner. Works well with gulp.js and/or webpack. This library will clear the screen (non-destructively by inserting newlines until the previous commands are above the fold), and display the bars from the top.
 
 ## Install
 `npm install multi-progress-bars`
@@ -57,6 +57,8 @@ Check out the example directory for a working example.
 
 ## API
 
+Note: `percentage` is represented as the decimal form, i.e. 0.23 = 23%
+
 ### `new MultiProgressBar(options)`
 
 `options` `object` (all optional):
@@ -89,6 +91,8 @@ Not only does this method add a new Task, but if you pass in a name that already
  * `percentage` `<number>` optional. The amount to increment by. default = `0.01`
  * `barColorFn` `<(s: string) => string>` optional. A function that transforms the bar.
 
+ Incrementing a task to above 1(00%) will automatically call `done` on it.
+
 ### `mpb.updateTask(name, options)`
 
 `name` `string` Task name.
@@ -97,6 +101,8 @@ Not only does this method add a new Task, but if you pass in a name that already
  * `message` `<string>` optional. A message to print to the right of the bar.
  * `percentage` `<number>` optional. The amount to change the percentage to.
  * `barColorFn` `<(s: string) => string>` optional. A function that transforms the bar.
+
+ Calling updateTask with a percentage over 1(00%) will automatically set it to done. Calling updateTask on an task with `done: true` will restart it
 
 ## `mpb.done(name, options)`
 
