@@ -9,7 +9,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "prepublishOnly": "yarn build"
   },
   "author": "Sean Chen <kamiyo@gmail.com>",
   "license": "MIT",

@@ -1,1 +1,1 @@
-export * from './MultiProgressBars';
+export * from './multi-progress-bars';

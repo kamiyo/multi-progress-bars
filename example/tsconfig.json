@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "module": "commonJS",
+        "target": "ES6",
+        "noImplicitAny": true,
+        "moduleResolution": "node",
+        "rootDir": "../"
+    },
+    "include": ["./example.ts"],
+}

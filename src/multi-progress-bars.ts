@@ -4,17 +4,26 @@ import * as path from 'path';
 
 export type TaskType = 'percentage' | 'indefinite';
 
+type TransformFn = (bar: string) => string;
+
 export interface Task {
     name: string;
     index: number;
     type: TaskType;
     message: string;
-    barColorFn: (bar: string) => string;
+    barColorFn: TransformFn;
     percentage?: number;
     done: boolean;
 }
 
-export type UpdateOptions = { percentage?: number} & Partial<Pick<Task, 'message' | 'barColorFn'>>;
+export interface AddOptions {
+    index: number;
+    type: TaskType;
+    message?: string;
+    barColorFn?: TransformFn;
+}
+
+export type UpdateOptions = Partial<Pick<Task, 'message' | 'barColorFn' | 'percentage'>>;
 
 export interface Tasks {
     [key: string]: Task;
@@ -37,6 +46,7 @@ export type SpinnerGenerator = (t: number, width: number) => string;
  * @param numCrawlers       Optional: Number of crawlers for the indefinite spinner
  * @param progressWidth     Width of the progress bar
  * @param spinnerGenerator  See SpinnerGenerator type
+ * @param initMessage       Message to display above the bars
  */
 export interface CtorOptions {
     stream: WriteStream;
@@ -47,7 +57,11 @@ export interface CtorOptions {
     initMessage?: string;
 }
 
-export class MultiProgressBar {
+const isAboutEqualTo = (a: number, b: number) => {
+    return (Math.abs(a - b) < 1e-6);
+}
+
+export class MultiProgressBars {
     private tasks: Tasks = {};
     private stream: WriteStream;
     private spinnerFPS: number;
@@ -55,9 +69,9 @@ export class MultiProgressBar {
     private progressWidth: number;
     private CHARS = ['\u258F', '\u258E', '\u258D', '\u258C', '\u258B', '\u258A', '\u2589', '\u2588'];
     private SPACE_FILLING_1 = ['\u2801', '\u2809', '\u2819', '\u281B', '\u281E', '\u2856', '\u28C6', '\u28E4',
-                     '\u28E0', '\u28A0', '\u2820'];
+        '\u28E0', '\u28A0', '\u2820'];
     private SPACE_FILLING_2 = ['\u2804', '\u2844', '\u28C4', '\u28E4', '\u28F0', '\u28B2', '\u2833', '\u281B', '\u280B',
-                     '\u2809', '\u2808'];
+        '\u2809', '\u2808'];
     private FRAC_CHARS = this.CHARS.slice(0, this.CHARS.length - 1);
     private FULL_CHAR = this.CHARS[this.CHARS.length - 1];
     private intervalID: NodeJS.Timeout;
@@ -82,7 +96,7 @@ export class MultiProgressBar {
             progressWidth = 40,
             numCrawlers = 4,
             initMessage,
-         } = options || {};
+        } = options || {};
         this.stream = stream;
         this.spinnerFPS = Math.min(spinnerFPS, 60);
         this.spinnerGenerator = spinnerGenerator;
@@ -91,7 +105,7 @@ export class MultiProgressBar {
             progressWidth += 1;
         }
         if (progressWidth % numCrawlers !== 0) {
-            for(let i = numCrawlers - 1; i > 0; i++) {
+            for (let i = numCrawlers - 1; i > 0; i++) {
                 if (progressWidth % i === 0) {
                     numCrawlers = i;
                     break;
@@ -102,14 +116,21 @@ export class MultiProgressBar {
         this.progressWidth = progressWidth;
         if (initMessage === undefined) {
             initMessage = '$ ' + process.argv.map((arg) => {
-                const name = path.parse(arg).name;
-                return (name === 'node') ? '' : name;
+                return path.parse(arg).name;
             }).join(' ');
         }
         this.init(initMessage);
     }
 
     private init(message: string) {
+
+        // setup cleanup
+        (process as NodeJS.Process).on('SIGINT', () => {
+            if (this.intervalID) {
+                clearInterval(this.intervalID);
+            }
+        });
+
         const splitMessage = message.split('\n').map((str) => str.length);
         const cols = this.stream.columns;
         const eachCols = splitMessage.map((msg) => Math.ceil(msg / cols));
@@ -123,31 +144,41 @@ export class MultiProgressBar {
         this.stream.write(blankMinInit);
     }
 
-    public addTask(name: string, type: TaskType, barColorFn: (b: string) => string, index: number) {
-       if (this.tasks[name] !== undefined) {
+    public addTask(name: string, {
+        index,
+        ...options
+    }: Omit<Task, 'name' | 'done' | 'message'> & Partial<Pick<Task, 'message'>>) {
+        if (this.tasks[name] !== undefined) {
+            Object.keys(options).forEach((key: keyof Partial<Omit<Task, 'index' | 'name' | 'done'>>) => options[key] === undefined && delete options[key])
             this.tasks[name] = {
                 ...this.tasks[name],
+                ...options,
                 name,
-                type,
-                barColorFn,
                 done: false,
             };
         } else {
+            const {
+                type,
+                barColorFn = (s: string) => s,
+                percentage = 0,
+                message = '',
+            } = options;
             this.tasks[name] = {
+                type,
+                barColorFn,
+                percentage,
+                message,
                 name,
                 index: (index === undefined) ? Object.entries(this.tasks).length : index,
-                type,
-                message: '',
-                barColorFn,
                 done: false,
             };
         }
         // If the added task is an indefinite task, and the animation update has previous stopped,
         // Restart it.
-        if (type === 'indefinite' && !this.intervalID) {
+        if (options.type === 'indefinite' && !this.intervalID) {
             this.t = 0;
             this.intervalID = setInterval(() => this.renderIndefinite(), 1000 / this.spinnerFPS);
-        } else if (type === 'percentage') {
+        } else if (options.type === 'percentage') {
             this.tasks[name].percentage = 0;
             this.writeTask(this.tasks[name]);
         }
@@ -162,7 +193,7 @@ export class MultiProgressBar {
         // Do this by calling done() again.
         Object.entries(this.tasks).forEach(([name, { done, type, message }]) => {
             if (done && type === 'indefinite') {
-                this.done(name, message);
+                this.done(name, { message });
             }
         });
 
@@ -216,7 +247,23 @@ export class MultiProgressBar {
         this.stream.cursorTo(0, Object.entries(this.tasks).length + this.initialLines);
     }
 
-    public updateTask(name: string, { ...options }: UpdateOptions) {
+    public incrementTask(name: string, options: Pick<UpdateOptions, 'message' | 'barColorFn'> = {}) {
+        if (this.tasks[name] === undefined) throw new ReferenceError('Task does not exist.')
+        if (this.tasks[name].done) {
+            return;
+        }
+        if (isAboutEqualTo(this.tasks[name].percentage, 1)) {
+            this.done(name, options);
+        } else {
+            this.updateTask(name, {
+                ...options,
+                percentage: this.tasks[name].percentage + 0.01,
+            });
+        }
+    }
+
+    public updateTask(name: string, options: UpdateOptions = {}) {
+        if (this.tasks[name] === undefined) throw new ReferenceError('Task does not exist.')
         const task = this.tasks[name];
 
         this.tasks[name] = {
@@ -225,19 +272,27 @@ export class MultiProgressBar {
         };
 
         if (task.type === 'indefinite') {
+            this.tasks[name].done = false;
+            if (!this.intervalID) {
+                this.t = 0;
+                this.intervalID = setInterval(() => this.renderIndefinite(), 1000 / this.spinnerFPS);
+
+                this.promise = new Promise((res, _) => this.resolve = res);
+            }
             return;
         }
 
         this.writeTask(this.tasks[name]);
     }
 
-    public done(name: string, message = chalk.green('Finished')) {
+    public done(name: string, { message = chalk.green('Finished'), ...options }: Pick<UpdateOptions, 'message' | 'barColorFn'> = {}) {
         if (this.tasks[name] === undefined) throw new ReferenceError('Task does not exist.')
         this.tasks[name] = {
             ...this.tasks[name],
             done: true,
             percentage: 1,
             message,
+            ...options,
         };
 
         const task = this.tasks[name];
@@ -262,6 +317,28 @@ export class MultiProgressBar {
         }
     }
 
+    public restart(name: string, options: Pick<UpdateOptions, 'message' | 'barColorFn'>) {
+        if (this.tasks[name] === undefined) throw new ReferenceError('Task does not exist.')
+        this.tasks[name] = {
+            ...this.tasks[name],
+            ...options,
+            percentage: 0,
+            done: false,
+        };
+
+        if (this.tasks[name].type === 'indefinite' && !this.intervalID) {
+            this.t = 0;
+            this.intervalID = setInterval(() => this.renderIndefinite(), 1000 / this.spinnerFPS);
+
+        } else if (this.tasks[name].type === 'percentage') {
+            this.tasks[name].percentage = 0;
+            this.writeTask(this.tasks[name]);
+        }
+
+        this.promise = new Promise((res, _) => this.resolve = res);
+    }
+
+    // TODO maybe make this static?
     private hilbertSpinner(t: number, width: number) {
         // Each cell takes 8 steps to go through (plus 3 for trailing).
         const cycle = 8 * width / this.numCrawlers;
