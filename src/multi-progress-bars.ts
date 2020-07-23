@@ -153,6 +153,7 @@ export class MultiProgressBars {
             this.tasks[name] = {
                 ...this.tasks[name],
                 ...options,
+                percentage: 0,
                 name,
                 done: false,
             };
