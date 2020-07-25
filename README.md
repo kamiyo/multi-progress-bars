@@ -255,6 +255,10 @@ exports.watch = watchWebpack;
 N.B. Above code not 100% tested.
 
 ## TODO
+* Make the cursor moving operations atomic with the other writes so we don't get thrashing if other stuff is being printed.
+    * Will require using ansi escape codes with one call to stdout.write instead of relying on Node's readline/stdout cursorTo and moveCursors; either that or use promises as a mutex for performing the move and the writes together.
+* Allow bars to be at top or at bottom, while allowing other logs to be printed
+    * Will require intercepting/overwriting default console.log or stdout.write. Not sure which would be better yet.
 * Decouple hilbertSpinner from the instance.
 * Allow custom bar format
 * Allow custom progress format
