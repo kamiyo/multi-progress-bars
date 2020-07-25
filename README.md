@@ -1,6 +1,8 @@
 # multi-progress-bars
 A node library for displaying multiple progress bars, with an option for displaying indefinite tasks by using a spinner. Works well with gulp.js and/or webpack. This library will clear the screen (non-destructively by inserting newlines until the previous commands are above the fold), and display the bars from the top.
 
+![MultiProgressBar demo](./assets/mpb.gif)
+
 ## Install
 `npm install multi-progress-bars`
 or
