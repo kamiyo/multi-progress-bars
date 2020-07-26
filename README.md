@@ -12,20 +12,20 @@ or
 
 ## Usage
 Each bar is represented internally by a `Task`. First instantiate `MultiProgressBars`:
-```
+```node
 import { MultiProgressBars } from 'multi-progress-bars';
 
 const mpb = new MultiProgressBars();
 ```
 
 Then you can add bars by adding tasks:
-```
+```node
 const Task1 = 'Task 1'
 mpb.addTask(Task1, { type: 'percentage', index: 0 });
 ```
 
 Spice up the bars by passing in a string transform function:
-```
+```node
 import * as chalk from 'chalk'; // or colors.js
 
 const ColorBarTask = 'Task Color'
@@ -33,25 +33,25 @@ mpb.addTask(Task Color, { type: 'percentage', index: 1, barColorFn: chalk.green 
 ```
 
 Create an indefinite spinner by:
-```
+```node
 const Task2 = 'Task 2'
 mpb.addTask(Task2, { type: 'indefinite', index: 2 });
 ```
 
 Update the bars with either incrementTask or updateTask:
-```
+```node
 mpb.updateTask(Task1, { percentage: 0.3 });
 // or
 mpb.incrementTask(Task1);
 ```
 
 When task is done call done(). A percentage of 1(00%) does not imply done:
-```
+```node
 mpb.done(Task1);
 ```
 
 multi-progress-bars exposes a Promise that will be resolved when all tasks are done:
-```
+```node
 await mpb.promise;
 // Do stuff here when all tasks finish
 // Promise will be reset when tasks are restarted or new tasks are added
@@ -136,7 +136,7 @@ Included in this library is a cool Hilbert Curve / Space-Filling Curve spinner. 
 
 You can print status for, say, a typescript compilation like this (this is in javascript, not typescript):
 
-```
+```node
 const glob = require('glob');
 const { Transform } = require('stream');
 const ts = require('gulp-typescript');
@@ -191,7 +191,7 @@ exports.compileTS = compileTS;
 Pair that with a `watch`.
 You can also add Webpack by passing in the mpb instance to your webpack config
 
-```
+```node
 // webpack.dev.config.js
 
 const config = (mpb) => {
