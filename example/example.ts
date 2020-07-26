@@ -11,9 +11,9 @@ const main = async () => {
         initMessage: '$ node build-stuff.js'
     });
 
-    mpb.addTask(task1, { type: 'percentage', index: 0, barColorFn: chalk.yellow });
-    mpb.addTask(task2, { type: 'percentage', index: 1, barColorFn: chalk.blue });
-    mpb.addTask(taskInf, { type: 'indefinite', index: 2, barColorFn: chalk.magenta });
+    mpb.addTask(task1, { type: 'percentage', index: 0, barColorFn: chalk.yellow, message: 'I move slow' });
+    mpb.addTask(task2, { type: 'percentage', index: 1, barColorFn: chalk.blue, message: 'I move faster' });
+    mpb.addTask(taskInf, { type: 'indefinite', index: 2, barColorFn: chalk.magenta, message: 'I go forever until stopped' });
 
     let timerCount = 0;
     timerId = setInterval(() => {
@@ -28,7 +28,7 @@ const main = async () => {
         mpb.done(taskInf);
         timeoutId = setTimeout(() => {
             // or mpb.restart or mpb.addTask with same name;
-            mpb.updateTask(taskInf, { message: 'Restarted' });
+            mpb.updateTask(taskInf, { message: 'Restarted indefinite task.' });
             timeoutId = setTimeout(() => {
                 mpb.done(taskInf);
             }, 3000);
