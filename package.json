@@ -10,18 +10,34 @@
   ],
   "scripts": {
     "build": "rollup -c",
+    "release": "standard-version",
     "prepublishOnly": "yarn build",
     "buildExample": "yarn tsc -b example",
     "clean": "yarn trash 'dist/**/*' 'example/example.js'",
     "runExample": "yarn build && yarn buildExample && yarn node example/example.js"
   },
   "author": "Sean Chen <kamiyo@gmail.com>",
+  "keywords": [
+    "bars",
+    "progress",
+    "node",
+    "reporter"
+  ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kamiyo/multi-progress-bars"
+  },
+  "homepage": "https://github.com/kamiyo/multi-progress-bars",
+  "bugs": {
+    "url": "https://github.com/kamiyo/multi-progress-bars/issues"
+  },
   "devDependencies": {
     "@types/node": "12",
     "@wessberg/rollup-plugin-ts": "^1.2.28",
     "rollup": "^2.22.1",
     "rollup-plugin-typescript2": "^0.27.1",
+    "standard-version": "^8.0.2",
     "trash-cli": "^3.0.0",
     "tslib": "^2.0.0",
     "typescript": "^3.9.7"
