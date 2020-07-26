@@ -239,7 +239,7 @@ export class MultiProgressBars {
 
     private writeTask(task: Task) {
         this.stream.cursorTo(0, this.initialLines + task.index);
-        this.stream.write(this.progressString(task.name, task.percentage, task.message, task.barColorFn));
+        this.stream.write(this.progressString(task.name, task.percentage, task.message, task.barColorFn).slice(0, this.stream.columns));
         this.stream.clearLine(1);
         this.stream.cursorTo(0, Object.entries(this.tasks).length + this.initialLines);
     }
