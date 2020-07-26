@@ -65,7 +65,7 @@ Note: `percentage` is represented as the decimal form, i.e. 0.23 = 23%
 
 ### `new MultiProgressBar(options)`
 
-`options` `object` (all optional):
+`options` `<object>` (all optional):
  * `stream` `<TTY.WriteStream>` Can be `process.stdout` or `process.stderr`. default = `process.stdout`
  * `spinnerFPS` `<number>` The FPS to update the spinner. default = `10`
  * `progressWidth` `<number>` The width of the progress bars. This will be incremented if odd (it's just easier to deal with even width). default = `40`
@@ -75,9 +75,9 @@ Note: `percentage` is represented as the decimal form, i.e. 0.23 = 23%
 
 ### `mpb.addTask(name, options)`
 
-`name` `string` Task name. All subsequent actions on the task will be called with this same name.
+`name` `<string>` Task name. All subsequent actions on the task will be called with this same name.
 
-`options` `object`:
+`options` `<object>`:
  * `type` `<'percentage' | 'indefinite'>` required.
  * `index` `<number>` required. default = increment from previous || 0.
  * `percentage` `<number>` optional. The starting percentage (0 to 1). default = `0`
@@ -88,9 +88,9 @@ Not only does this method add a new Task, but if you pass in a name that already
 
 ### `mpb.incrementTask(name, options)`
 
-`name` `string` Task name.
+`name` `<string>` Task name.
 
-`options` `object` (unset properties will not affect change unless a default exists):
+`options` `<object>` (unset properties will not affect change unless a default exists):
  * `message` `<string>` optional. A message to print to the right of the bar.
  * `percentage` `<number>` optional. The amount to increment by. default = `0.01`
  * `barColorFn` `<(s: string) => string>` optional. A function that transforms the bar.
@@ -99,9 +99,9 @@ Not only does this method add a new Task, but if you pass in a name that already
 
 ### `mpb.updateTask(name, options)`
 
-`name` `string` Task name.
+`name` `<string>` Task name.
 
-`options` `object` (unset properties will not affect change):
+`options` `<object>` (unset properties will not affect change):
  * `message` `<string>` optional. A message to print to the right of the bar.
  * `percentage` `<number>` optional. The amount to change the percentage to.
  * `barColorFn` `<(s: string) => string>` optional. A function that transforms the bar.
@@ -110,17 +110,17 @@ Not only does this method add a new Task, but if you pass in a name that already
 
 ## `mpb.done(name, options)`
 
-`name` `string` Task name.
+`name` `<string>` Task name.
 
-`options` `object` (unset properties will not affect change):
+`options` `<object>` (unset properties will not affect change):
  * `message` `<string>` optional. A message to print to the right of the bar. default = `chalk.green('Finished')`
  * `barColorFn` `<(s: string) => string>` optional. A function that transforms the bar.
 
 ### `mpb.restart(name, options)`
 
-`name` `string` Task name.
+`name` `<string>` Task name.
 
-`options` `object` (unset properties will not affect change):
+`options` `<object>` (unset properties will not affect change):
  * `message` `<string>` optional. A message to print to the right of the bar.
  * `barColorFn` `<(s: string) => string>` optional. A function that transforms the bar.
 
