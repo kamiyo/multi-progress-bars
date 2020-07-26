@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.3](https://github.com/kamiyo/multi-progress-bars/compare/v1.1.2...v1.1.3) (2020-07-26)
+
+
+### Bug Fixes
+
+* **readme:** Added language for markdown highlighting ([a35041a](https://github.com/kamiyo/multi-progress-bars/commit/a35041a909d3c07d6dadc2db21876d34d5c794a1))
+
 ### [1.1.2](https://github.com/kamiyo/multi-progress-bars/compare/v1.1.1...v1.1.2) (2020-07-26)
 
 
