@@ -1,6 +1,12 @@
 import * as chalk from 'chalk';
 import { WriteStream } from 'tty';
 import * as path from 'path';
+import {
+    CUP,
+    CHA,
+    EL,
+    ED,
+} from './utils';
 
 export type TaskType = 'percentage' | 'indefinite';
 
@@ -132,12 +138,9 @@ export class MultiProgressBars {
         const eachCols = splitMessage.map((msg) => Math.ceil(msg / cols));
         this.initialLines = eachCols.reduce((prev, curr) => prev + curr, 0);
         const blank = '\n'.repeat(this.stream.rows);
-        this.stream.write(blank);
-        this.stream.cursorTo(0);
-        this.stream.clearScreenDown();
-        this.stream.write(message);
         const blankMinInit = '\n'.repeat(this.stream.rows - this.initialLines);
-        this.stream.write(blankMinInit);
+        const stringToWrite = blank + CUP(0) + ED() + message + blankMinInit;
+        this.stream.write(stringToWrite);
     }
 
     public addTask(name: string, {
