@@ -1,6 +1,7 @@
 import * as chalk from 'chalk';
 import { WriteStream } from 'tty';
 import * as path from 'path';
+import { default as stringWidth } from 'string-width';
 
 export type TaskType = 'percentage' | 'indefinite';
 
@@ -127,7 +128,7 @@ export class MultiProgressBars {
             }
         });
 
-        const splitMessage = message.split('\n').map((str) => str.length);
+        const splitMessage = message.split('\n').map((str) => stringWidth(str));
         const cols = this.stream.columns;
         const eachCols = splitMessage.map((msg) => Math.ceil(msg / cols));
         this.initialLines = eachCols.reduce((prev, curr) => prev + curr, 0);
@@ -181,7 +182,7 @@ export class MultiProgressBars {
         }
 
         // Calculated longest name to pad other names to.
-        this.longestNameLength = Math.max(this.longestNameLength, name.length);
+        this.longestNameLength = Math.max(this.longestNameLength, stringWidth(name));
 
         // Reset promise for end hook
         this.promise = new Promise((res, _) => this.resolve = res);
