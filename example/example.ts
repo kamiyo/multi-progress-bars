@@ -5,7 +5,7 @@ let timerId: NodeJS.Timeout, timeoutId: NodeJS.Timeout;
 
 const main = async () => {
     const task1 = 'Task 1';
-    const task2 = 'Task 2';
+    const task2 = chalk.yellow('Task 2');
     const taskInf = 'Task \u221e';
     const mpb = new MultiProgressBars({
         initMessage: '$ node build-stuff.js'

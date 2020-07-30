@@ -3728,6 +3728,7 @@ fsevents@~2.1.2:
     rollup: ^2.22.1
     rollup-plugin-typescript2: ^0.27.1
     standard-version: ^8.0.2
+    string-width: ^4.2.0
     trash-cli: ^3.0.0
     tslib: ^2.0.0
     typescript: ^3.9.7
