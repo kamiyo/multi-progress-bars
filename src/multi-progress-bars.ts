@@ -76,6 +76,10 @@ export class MultiProgressBars {
         '\u2809', '\u2808'];
     private FRAC_CHARS = this.CHARS.slice(0, this.CHARS.length - 1);
     private FULL_CHAR = this.CHARS[this.CHARS.length - 1];
+    private consoleSize: {
+        width: number;
+        height: number;
+    };
     private intervalID: NodeJS.Timeout;
     private numCrawlers: number;
     private longestNameLength = 0;
@@ -100,6 +104,9 @@ export class MultiProgressBars {
             initMessage,
         } = options || {};
         this.stream = stream;
+        this.stream.on('resize', () => {
+            this.resizeConsole();
+        });
         this.spinnerFPS = Math.min(spinnerFPS, 60);
         this.spinnerGenerator = spinnerGenerator;
 
@@ -116,6 +123,7 @@ export class MultiProgressBars {
         }
         this.numCrawlers = numCrawlers;
         this.progressWidth = progressWidth;
+        this.resizeConsole();
         if (initMessage === undefined) {
             initMessage = '$ ' + process.argv.map((arg) => {
                 return path.parse(arg).name;
@@ -123,6 +131,13 @@ export class MultiProgressBars {
         }
         this.init(initMessage);
     }
+
+    private resizeConsole = () => {
+        this.consoleSize = {
+            width: this.stream.columns,
+            height: this.stream.rows,
+        };
+    };
 
     private init(message: string) {
 
@@ -134,13 +149,13 @@ export class MultiProgressBars {
         });
 
         const splitMessage = message.split('\n').map((str) => str.length);
-        const cols = this.stream.columns;
+        const cols = this.consoleSize.width;
         const eachCols = splitMessage.map((msg) => Math.ceil(msg / cols));
         this.initialLines = eachCols.reduce((prev, curr) => prev + curr, 0);
         const blank = '\n'.repeat(this.stream.rows);
         const blankMinInit = '\n'.repeat(this.stream.rows - this.initialLines);
-        const stringToWrite = blank + CUP(0) + ED() + message + blankMinInit;
-        this.stream.write(stringToWrite);
+        const writeString = blank + CUP(0) + ED() + message + blankMinInit;
+        this.stream.write(writeString);
     }
 
     public addTask(name: string, {
@@ -241,7 +256,10 @@ export class MultiProgressBars {
     }
 
     private writeTask(task: Task) {
-        this.stream.cursorTo(0, this.initialLines + task.index);
+        let writeString = CUP(0, this.initialLines + task.index);
+        // make sure the progressString does not exceed width;
+        const progressString = this.progressString(task.name, task.percentage, task.message, task.barColorFn);
+        // writeString +=
         this.stream.write(this.progressString(task.name, task.percentage, task.message, task.barColorFn).slice(0, this.stream.columns));
         this.stream.clearLine(1);
         this.stream.cursorTo(0, Object.entries(this.tasks).length + this.initialLines);
