@@ -11,7 +11,7 @@
   "scripts": {
     "build": "rollup -c",
     "release": "standard-version",
-    "prepublishOnly": "yarn build",
+    "prepublishOnly": "yarn clean && yarn build",
     "buildExample": "yarn tsc -b example",
     "clean": "yarn trash 'dist/**/*' 'example/example.js'",
     "runExample": "yarn build && yarn buildExample && yarn node example/example.js"
