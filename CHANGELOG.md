@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0](https://github.com/kamiyo/multi-progress-bars/compare/v1.1.4...v2.0.0) (2020-08-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* **behavior:** Overrides console so that console.logs can be preserved for scrollback. This requires a virtual-console class that manages fixed and dynamic rows. API technically hasn't changed, but marked as breaking since behavior is changed.
+
+### Features
+
+* **behavior:** Overrides console so that console.logs can be preserved for scrollback. This requires a virtual-console class that manages fixed and dynamic rows. API technically hasn't changed, but marked as breaking since behavior is changed. ([e045917](https://github.com/kamiyo/multi-progress-bars/commit/e0459174995cb17d8e0bb21d4ee09da53a089d00))
+
 ### [1.1.4](https://github.com/kamiyo/multi-progress-bars/compare/v1.1.3...v1.1.4) (2020-07-29)
 
 ### [1.1.3](https://github.com/kamiyo/multi-progress-bars/compare/v1.1.2...v1.1.3) (2020-07-26)
