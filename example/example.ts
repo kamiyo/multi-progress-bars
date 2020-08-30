@@ -4,6 +4,7 @@ import * as chalk from 'chalk';
 let timerId: NodeJS.Timeout, timeoutId: NodeJS.Timeout;
 
 const main = async () => {
+
     const task1 = 'Task 1';
     const task2 = chalk.yellow('Task 2');
     const taskInf = 'Task \u221e';
@@ -11,14 +12,20 @@ const main = async () => {
         initMessage: '$ node build-stuff.js'
     });
 
-    mpb.addTask(task1, { type: 'percentage', index: 0, barColorFn: chalk.yellow, message: 'I move slow' });
-    mpb.addTask(task2, { type: 'percentage', index: 1, barColorFn: chalk.blue, message: 'I move faster' });
+    (process as NodeJS.Process).on('SIGINT', () => {
+        clearInterval(timerId);
+        clearTimeout(timeoutId);
+    });
+
+    mpb.addTask(task1, { type: 'percentage', index: 0, barColorFn: chalk.yellow, message: 'I move slowwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww' });
+    mpb.addTask(task2, { type: 'percentage', index: 1, barColorFn: chalk.blue, message: chalk.blue('I move fasterrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr') });
     mpb.addTask(taskInf, { type: 'indefinite', index: 2, barColorFn: chalk.magenta, message: 'I go forever until stopped' });
 
     let timerCount = 0;
     timerId = setInterval(() => {
         if (timerCount % 2 === 0) {
             mpb.incrementTask(task1);
+            console.log("Console log:", timerCount);
         }
         mpb.incrementTask(task2);
         timerCount++;
@@ -37,12 +44,7 @@ const main = async () => {
 
     await mpb.promise;
     clearInterval(timerId);
+    console.log("Final Status Message!")
 };
-
-(process as NodeJS.Process).on('SIGINT', () => {
-    clearInterval(timerId);
-    clearTimeout(timeoutId);
-    process.kill(process.pid);
-})
 
 main();

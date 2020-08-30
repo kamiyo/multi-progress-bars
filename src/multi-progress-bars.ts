@@ -4,14 +4,16 @@ import * as path from 'path';
 import { default as stringWidth } from 'string-width';
 import {
     CUP,
-    CHA,
     EL,
-    ED,
+    clampString,
 } from './utils';
+import { VirtualConsole } from './virtual-console';
 
 export type TaskType = 'percentage' | 'indefinite';
 
 type TransformFn = (bar: string) => string;
+
+const defaultTransformFn: TransformFn = (s: string) => s;
 
 export interface Task {
     name: string;
@@ -81,12 +83,14 @@ export class MultiProgressBars {
         width: number;
         height: number;
     };
+    private endLine = 0;
     private intervalID: NodeJS.Timeout;
     private numCrawlers: number;
     private longestNameLength = 0;
     private t = 0;
     private resolve: () => void;
     private spinnerGenerator: SpinnerGenerator;
+    private logger = new VirtualConsole({ stream: process.stdout });
     public promise: Promise<void>;
 
     /**
@@ -140,29 +144,33 @@ export class MultiProgressBars {
         };
     };
 
+    public cleanup = () => {
+        if (this.intervalID) {
+            clearInterval(this.intervalID);
+        }
+    }
+
     private init(message: string) {
 
         // setup cleanup
-        (process as NodeJS.Process).on('SIGINT', () => {
-            if (this.intervalID) {
-                clearInterval(this.intervalID);
-            }
-        });
+        (process as NodeJS.Process).on('SIGINT', this.cleanup);
 
-        const splitMessage = message.split('\n').map((str) => stringWidth(str));
-        const cols = this.consoleSize.width;
-        const eachCols = splitMessage.map((msg) => Math.ceil(msg / cols));
-        this.initialLines = eachCols.reduce((prev, curr) => prev + curr, 0);
-        const blank = '\n'.repeat(this.stream.rows);
-        const blankMinInit = '\n'.repeat(this.stream.rows - this.initialLines);
-        const writeString = blank + CUP(0) + ED() + message + blankMinInit;
-        this.stream.write(writeString);
+        // TODO make this account for lines that wrap
+        const splitMessage = message.split('\n');
+        splitMessage.forEach((msg, idx) => {
+            this.logger.upsertProgress({
+                index: idx,
+                data: msg,
+            });
+        });
+        this.initialLines = splitMessage.length;
     }
 
     public addTask(name: string, {
         index,
         ...options
     }: Omit<Task, 'name' | 'done' | 'message'> & Partial<Pick<Task, 'message'>>) {
+        // if task exists, update fields
         if (this.tasks[name] !== undefined) {
             Object.keys(options).forEach((key: keyof Partial<Omit<Task, 'index' | 'name' | 'done'>>) => options[key] === undefined && delete options[key])
             this.tasks[name] = {
@@ -173,22 +181,30 @@ export class MultiProgressBars {
                 done: false,
             };
         } else {
+            // otherwise make a new task
             const {
                 type,
-                barColorFn = (s: string) => s,
+                barColorFn = defaultTransformFn,
                 percentage = 0,
                 message = '',
             } = options;
+            this.endLine = Math.max.apply(
+                null,
+                [
+                    index,
+                    ...Object.entries(this.tasks).map(([_, task]) => task.index)
+                ]) + 1;
             this.tasks[name] = {
                 type,
                 barColorFn,
                 percentage,
                 message,
                 name,
-                index: (index === undefined) ? Object.entries(this.tasks).length : index,
+                index,
                 done: false,
             };
         }
+
         // If the added task is an indefinite task, and the animation update has previous stopped,
         // Restart it.
         if (options.type === 'indefinite' && !this.intervalID) {
@@ -212,19 +228,16 @@ export class MultiProgressBars {
                 this.done(name, { message });
             }
         });
-
-        // Go to bottom of tasks and clear downwards.
-        this.stream.cursorTo(0, Object.entries(this.tasks).length + this.initialLines);
-        this.stream.clearScreenDown();
     }
 
-    private progressString(
-        name: string,
-        percentage: number,
-        message: string,
-        barColorFn: (b: string) => string
-            = (b: string) => b,
-    ) {
+    private progressString(task: Task) {
+        const {
+            name,
+            barColorFn,
+            message,
+            percentage,
+        } = task;
+
         // scale progress bar to percentage of total width
         const scaled = percentage * this.progressWidth;
         // scaledInt gives you the number of full blocks
@@ -256,14 +269,20 @@ export class MultiProgressBars {
             + message;
     }
 
+    private indefiniteString(task: Task, spinner: string) {
+        const {
+            name,
+            barColorFn,
+            message,
+        } = task;
+        return name.padStart(this.longestNameLength) + ': ' + barColorFn(spinner) + ' ' + message;
+    }
+
     private writeTask(task: Task) {
-        let writeString = CUP(0, this.initialLines + task.index);
-        // make sure the progressString does not exceed width;
-        const progressString = this.progressString(task.name, task.percentage, task.message, task.barColorFn);
-        // writeString +=
-        this.stream.write(this.progressString(task.name, task.percentage, task.message, task.barColorFn).slice(0, this.stream.columns));
-        this.stream.clearLine(1);
-        this.stream.cursorTo(0, Object.entries(this.tasks).length + this.initialLines);
+        this.logger.upsertProgress({
+            index: task.index + this.initialLines,
+            data: this.progressString(task),
+        });
     }
 
     public incrementTask(
@@ -327,15 +346,12 @@ export class MultiProgressBars {
 
         const task = this.tasks[name];
 
-        this.stream.cursorTo(0, this.initialLines + task.index);
-
         const bar = task.barColorFn(this.FULL_CHAR.repeat(this.progressWidth));
 
-        // TODO customizable format. Maybe unify this with writeTask
-        this.stream.write(name.padStart(this.longestNameLength) + ': ' + bar + ' ' + message);
-
-        this.stream.clearLine(1);
-        this.stream.cursorTo(0, Object.entries(this.tasks).length + this.initialLines);
+        this.logger.upsertProgress({
+            index: task.index + this.initialLines,
+            data: name.padStart(this.longestNameLength) + ': ' + bar + ' ' + message,
+        });
 
         // Stop animation if all tasks are done, and resolve the promise.
         if (Object.entries(this.tasks).reduce((prev, [_, curr]) => {
@@ -399,13 +415,17 @@ export class MultiProgressBars {
     private renderIndefinite() {
         const spinner = this.spinnerGenerator(this.t, this.progressWidth);
 
-        Object.entries(this.tasks).forEach(([name, task]) => {
+        Object.entries(this.tasks).forEach(([_, task]) => {
             if (task.type === 'indefinite' && task.done === false) {
-                this.stream.cursorTo(0, this.initialLines + task.index);
-                this.stream.write(name.padStart(this.longestNameLength) + ': ' + task.barColorFn(spinner) + ' ' + task.message);
-                this.stream.clearLine(1);
+                let progressString = this.indefiniteString(task, spinner);
+                this.logger.upsertProgress({
+                    index: task.index + this.initialLines,
+                    data: progressString,
+                    refresh: false,
+                });
             }
         });
+        this.logger.refresh();
         this.t = this.t + 1;
     }
 }

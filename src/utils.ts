@@ -1,6 +1,8 @@
+import { default as stringWidth } from 'string-width';
 
 const ESC = '\x1B';
 const CSI = ESC + '[';
+export const RESET = CSI + '0m'
 
 const numberTo1StringHelper = (number: number) =>
     (number !== undefined) ? (number + 1).toFixed(0) : '';
@@ -90,4 +92,15 @@ export enum ED_MODE {
 
 export const ED = (mode: ED_MODE = ED_MODE.TO_END) => {
     return CSI + mode.toString() + 'J';
+};
+
+// Always puts a reset ANSI escape code, just in case it was stripped.
+// Anyways, probably don't want any styling codes to linger past one line.
+export const clampString = (message: string, width: number) => {
+    while (stringWidth(message) > width) {
+        // Can't be sure we are slicing off a character vs a control sequence or colors
+        // so do it this way, checking each time.
+        message = message.slice(0, message.length - 1);
+    }
+    return message + RESET;
 };
