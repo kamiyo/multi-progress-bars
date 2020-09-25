@@ -35,6 +35,8 @@ export class VirtualConsole {
     private consoleHeight: number;
     private originalConsole: Console;
     private stream: WriteStream;
+    warn: Console['warn'];
+    error: Console['error'];
 
     constructor(options: VirtualConsoleCtorOptions) {
         this.originalConsole = console;
@@ -45,6 +47,8 @@ export class VirtualConsole {
         this.consoleHeight = this.height;
         this.progressBuffer = [];
         this.consoleBuffer = [];
+        this.warn = this.log;
+        this.error = this.log;
         (console as any) = this;
         this.init();
     }
