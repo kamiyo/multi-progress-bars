@@ -54,13 +54,13 @@ export class VirtualConsole {
     }
 
     cleanup() {
-        this.stream.write('\x1b[0m');
+        this.stream?.write('\x1b[0m');
     }
 
     init() {
         (process as NodeJS.Process).on('SIGINT', this.cleanup);
         const blank = '\n'.repeat(this.stream.rows) + CUP(0) + ED(ED_MODE.TO_END);
-        this.stream.write(blank);
+        this.stream?.write(blank);
     }
 
     /** Add or Update Progress Entry
@@ -103,7 +103,7 @@ export class VirtualConsole {
         let writeString = indexes.reduce((prev, index) => {
             return prev += CUP(index) + this.progressBuffer[index];
         }, '');
-        this.stream.write(writeString);
+        this.stream?.write(writeString);
     }
 
     refresh() {
@@ -114,7 +114,7 @@ export class VirtualConsole {
             + this.consoleBuffer.map((val) => val + EL(EL_MODE.TO_END)).join('\n')
             + '\n';
 
-        this.stream.write(outString);
+        this.stream?.write(outString);
     }
 
     log(...data: any[]) {
@@ -142,7 +142,7 @@ export class VirtualConsole {
             + this.consoleBuffer.map((val) => val + EL(EL_MODE.TO_END)).join('\n')
             + '\n';
 
-        this.stream.write(outString);
+        this.stream?.write(outString);
     }
 
 }
