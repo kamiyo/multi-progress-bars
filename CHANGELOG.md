@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.5](https://github.com/kamiyo/multi-progress-bars/compare/v2.0.4...v2.0.5) (2020-11-05)
+
+
+### Bug Fixes
+
+* **dep:** Updated dependencies ([3cdd05f](https://github.com/kamiyo/multi-progress-bars/commit/3cdd05f382ff3e7fd316558b17ba13fbca2f46c6))
+
 ### [2.0.4](https://github.com/kamiyo/multi-progress-bars/compare/v2.0.3...v2.0.4) (2020-11-05)
 
 
