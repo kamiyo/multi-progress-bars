@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.4](https://github.com/kamiyo/multi-progress-bars/compare/v2.0.3...v2.0.4) (2020-11-05)
+
+
+### Bug Fixes
+
+* **bug:** in some cases, after SIGINT, this.stream becomes undefined, so use null-chaining for stream writes. ([4035f52](https://github.com/kamiyo/multi-progress-bars/commit/4035f52bed9282450ee680d344e3bcbf51d377b9))
+
 ### [2.0.3](https://github.com/kamiyo/multi-progress-bars/compare/v2.0.2...v2.0.3) (2020-09-25)
 
 
