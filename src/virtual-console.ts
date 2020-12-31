@@ -6,6 +6,7 @@ import {
 
 export interface VirtualConsoleCtorOptions {
     stream: WriteStream;
+    anchor: 'top' | 'bottom';
 }
 
 export interface AddProgressOptions {
@@ -26,33 +27,83 @@ export class VirtualConsole {
     private consoleHeight: number;
     private originalConsole: Console;
     private stream: WriteStream;
+    public anchor: 'top' | 'bottom';
+    done: () => void;
     warn: Console['warn'];
     error: Console['error'];
+    upsertProgress: (options: UpsertProgressOptions) => void;
+    writeLines: (...indexes: number[]) => void;
+    refresh: () => void;
+    log: (...data: any[]) => void;
 
     constructor(options: VirtualConsoleCtorOptions) {
         this.originalConsole = console;
         this.stream = options.stream;
-        this.width = process.stdout.columns;
-        this.height = process.stdout.rows - 1;
+        this.resize();
+        this.anchor = options.anchor;
+        // These members are only needed for top-anchored progresses
+        if (this.anchor === 'top') {
+            this.consoleBuffer = [];
+            this.consoleHeight = this.height;
+        }
+
+        this.stream.on('resize', this.resize);
+
         this.progressHeight = 0;
-        this.consoleHeight = this.height;
         this.progressBuffer = [];
-        this.consoleBuffer = [];
         this.warn = this.log;
         this.error = this.log;
         (console as any) = this;
+
+        if (this.anchor === 'top') {
+            this.upsertProgress = this.upsertProgressTop;
+            this.writeLines = this.writeLinesTop;
+            this.refresh = this.refreshTop;
+            this.log = this.logTop;
+            this.done = this.cleanup;
+        } else {
+            this.upsertProgress = this.upsertProgressBottom;
+            this.writeLines = this.writeLinesBottom;
+            this.refresh = this.refreshBottom;
+            this.log = this.logBottom;
+            this.done = this.gotoBottom;
+        }
+
         this.init();
+
+    }
+
+    checkConsoleIntercept() {
+        if (!this.originalConsole) {
+            this.originalConsole = console;
+            (console as any) = this;
+        }
+    }
+
+    // height is one less than rows, because if you print to the last line, the console usually adds a newline
+    resize() {
+        this.width = process.stdout.columns;
+        this.height = process.stdout.rows - 1;
+    }
+
+    gotoBottom() {
+        this.stream?.write(CUP(this.height + 1) + '\x1b[0m');
+        (console as any) = this.originalConsole;
+        this.originalConsole = null;
     }
 
     cleanup() {
         this.stream?.write('\x1b[0m');
         (console as any) = this.originalConsole;
+        this.originalConsole = null;
     }
 
     init() {
-        (process as NodeJS.Process).on('SIGINT', this.cleanup);
-        const blank = '\n'.repeat(this.stream.rows) + CUP(0) + ED(ED_MODE.TO_END);
-        this.stream?.write(blank);
+        (process as NodeJS.Process).on('SIGINT', this.done);
+        if (this.anchor === 'top') {
+            const blank = '\n'.repeat(this.stream.rows) + CUP(0) + ED(ED_MODE.TO_END);
+            this.stream?.write(blank);
+        }
     }
 
     /** Add or Update Progress Entry
@@ -61,7 +112,8 @@ export class VirtualConsole {
      * index: number
      * data: string
      */
-    upsertProgress(options: UpsertProgressOptions) {
+    upsertProgressTop(options: UpsertProgressOptions) {
+        this.checkConsoleIntercept();
 
         // If the progress we're upserting exists already, just update.
         if (options.index < this.progressHeight) {
@@ -89,22 +141,51 @@ export class VirtualConsole {
         }
     }
 
+    upsertProgressBottom(options: UpsertProgressOptions) {
+        this.checkConsoleIntercept();
+
+        // If the progress we're upserting exists already, just update.
+        if (options.index < this.progressHeight) {
+            this.progressBuffer[options.index] = clampString(options.data, this.width);
+            if (options.refresh === undefined || options.refresh) this.refresh();
+            return;
+        }
+
+        // Truncate progress line to console width.
+        this.progressBuffer[options.index] = clampString(options.data, this.width);
+
+        // Extend the progress bars section.
+        this.progressHeight = Math.max(options.index + 1, this.progressHeight);
+
+        this.refresh();
+    }
+
     updateProgress(options: UpsertProgressOptions) {
+        this.checkConsoleIntercept();
+
         this.progressBuffer[options.index] = clampString(options.data, this.width);
         if (options.refresh) {
             this.refresh();
         }
     }
 
-    writeLines(...indexes: number[]) {
+    writeLinesTop(...indexes: number[]) {
         let writeString = indexes.reduce((prev, index) => {
             return prev += CUP(index) + this.progressBuffer[index];
         }, '');
         this.stream?.write(writeString);
     }
 
+    writeLinesBottom(...indexes: number[]) {
+        const firstProgressLine = this.height - this.progressHeight;
+        let writeString = indexes.reduce((prev, index) => {
+            return prev += CUP(firstProgressLine + index) + this.progressBuffer[index];
+        }, '');
+        this.stream?.write(writeString);
+    }
+
     /* Prints out the buffers as they are */
-    refresh() {
+    refreshTop() {
         const outString =
             CUP(0)
             + this.progressBuffer.map((val) => val + EL(EL_MODE.TO_END)).join('\n')
@@ -115,7 +196,17 @@ export class VirtualConsole {
         this.stream?.write(outString);
     }
 
-    log(...data: any[]) {
+    refreshBottom() {
+        const firstProgressLine = this.height - this.progressHeight;
+        const outString =
+            this.progressBuffer.map((val) => val + EL(EL_MODE.TO_END)).join('\n')
+            + (this.progressBuffer.length ? '\n' : '')
+            + CUP(firstProgressLine);
+
+        this.stream?.write(outString);
+    }
+
+    logTop(...data: any[]) {
         const writeString: string = format.apply(null, data);
         // Split by newlines, and then split the resulting lines if they run longer than width.
         const clampedLines = writeString.split('\n').reduce<string[]>((prev, curr) => {
@@ -143,6 +234,22 @@ export class VirtualConsole {
             + (this.progressBuffer.length ? '\n' : '')
             + this.consoleBuffer.map((val) => val + EL(EL_MODE.TO_END)).join('\n')      // rest of the console log.
             + '\n';
+
+        this.stream?.write(outString);
+    }
+
+    logBottom(...data: any[]) {
+        const writeString: string = format.apply(null, data);
+        const firstProgressLine = this.height - this.progressHeight;
+
+        const outString =
+            this.progressBuffer.map((_) => EL(EL_MODE.ENTIRE_LINE)).join('\n')
+            + CUP(firstProgressLine)
+            + writeString
+            + '\n'
+            + this.progressBuffer.map((val) => val + EL(EL_MODE.TO_END)).join('\n')
+            + (this.progressBuffer.length ? '\n' : '')
+            + CUP(firstProgressLine);
 
         this.stream?.write(outString);
     }

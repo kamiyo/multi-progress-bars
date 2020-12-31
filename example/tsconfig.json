@@ -6,5 +6,5 @@
         "moduleResolution": "node",
         "rootDir": "../"
     },
-    "include": ["./example.ts"],
+    "include": ["exampleTop.ts", "exampleBottom.ts"],
 }

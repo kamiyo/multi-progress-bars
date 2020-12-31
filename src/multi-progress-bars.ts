@@ -2,11 +2,6 @@ import * as chalk from 'chalk';
 import { WriteStream } from 'tty';
 import * as path from 'path';
 import { default as stringWidth } from 'string-width';
-import {
-    CUP,
-    EL,
-    clampString,
-} from './utils';
 import { VirtualConsole } from './virtual-console';
 
 export type TaskType = 'percentage' | 'indefinite';
@@ -63,12 +58,13 @@ export interface CtorOptions {
     numCrawlers: number;
     progressWidth: number;
     spinnerGenerator: SpinnerGenerator;
-    initMessage?: string;
+    initMessage: string;
+    anchor: 'top' | 'bottom';
+    persist: boolean;
 }
 
 export class MultiProgressBars {
     private tasks: Tasks = {};
-    private stream: WriteStream;
     private spinnerFPS: number;
     private initialLines: number;
     private progressWidth: number;
@@ -79,18 +75,14 @@ export class MultiProgressBars {
         '\u2809', '\u2808'];
     private FRAC_CHARS = this.CHARS.slice(0, this.CHARS.length - 1);
     private FULL_CHAR = this.CHARS[this.CHARS.length - 1];
-    private consoleSize: {
-        width: number;
-        height: number;
-    };
-    private endLine = 0;
+    private persist: boolean;
     private intervalID: NodeJS.Timeout;
     private numCrawlers: number;
     private longestNameLength = 0;
     private t = 0;
     private resolve: () => void;
     private spinnerGenerator: SpinnerGenerator;
-    private logger = new VirtualConsole({ stream: process.stdout });
+    private logger: VirtualConsole;
     public promise: Promise<void>;
 
     /**
@@ -102,16 +94,18 @@ export class MultiProgressBars {
             stream = process.stdout,
             spinnerFPS = 10,
             spinnerGenerator = this.hilbertSpinner,
+            anchor = 'bottom',
+            persist = false,
         } = options || {};
         let {
             progressWidth = 40,
             numCrawlers = 4,
             initMessage,
         } = options || {};
-        this.stream = stream;
-        this.stream.on('resize', () => {
-            this.resizeConsole();
-        });
+
+        this.logger = new VirtualConsole({ stream, anchor });
+
+        this.persist = persist;
         this.spinnerFPS = Math.min(spinnerFPS, 60);
         this.spinnerGenerator = spinnerGenerator;
 
@@ -128,7 +122,6 @@ export class MultiProgressBars {
         }
         this.numCrawlers = numCrawlers;
         this.progressWidth = progressWidth;
-        this.resizeConsole();
         if (initMessage === undefined) {
             initMessage = '$ ' + process.argv.map((arg) => {
                 return path.parse(arg).name;
@@ -136,13 +129,6 @@ export class MultiProgressBars {
         }
         this.init(initMessage);
     }
-
-    private resizeConsole = () => {
-        this.consoleSize = {
-            width: this.stream.columns,
-            height: this.stream.rows,
-        };
-    };
 
     public cleanup = () => {
         if (this.intervalID) {
@@ -188,12 +174,6 @@ export class MultiProgressBars {
                 percentage = 0,
                 message = '',
             } = options;
-            this.endLine = Math.max.apply(
-                null,
-                [
-                    index,
-                    ...Object.entries(this.tasks).map(([_, task]) => task.index)
-                ]) + 1;
             this.tasks[name] = {
                 type,
                 barColorFn,
@@ -360,6 +340,9 @@ export class MultiProgressBars {
             clearInterval(this.intervalID);
             this.intervalID = null;
             this.resolve();
+            if (!this.persist) {
+                this.logger.done();
+            }
         }
     }
 
@@ -382,6 +365,10 @@ export class MultiProgressBars {
         }
 
         this.promise = new Promise((res, _) => this.resolve = res);
+    }
+
+    public close() {
+        this.logger.done();
     }
 
     // TODO maybe make this static?
