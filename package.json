@@ -33,14 +33,14 @@
     "url": "https://github.com/kamiyo/multi-progress-bars/issues"
   },
   "devDependencies": {
-    "@types/node": "12",
-    "@wessberg/rollup-plugin-ts": "^1.3.7",
-    "rollup": "^2.33.1",
+    "@types/node": "^12.19.0",
+    "@wessberg/rollup-plugin-ts": "^1.3.8",
+    "rollup": "^2.35.1",
     "rollup-plugin-typescript2": "^0.29.0",
-    "standard-version": "^9.0.0",
-    "trash-cli": "^3.1.0",
+    "standard-version": "^9.1.0",
+    "trash-cli": "^4.0.0",
     "tslib": "^2.0.3",
-    "typescript": "^4.0.5"
+    "typescript": "^4.1.3"
   },
   "dependencies": {
     "chalk": "^4.1.0",
