@@ -27,6 +27,12 @@ const main = async () => {
             mpb.incrementTask(task1);
             console.log("Console log:", timerCount);
         }
+        if (timerCount % 8 === 0) {
+            console.log("Long log! ".repeat(20));
+        }
+        if (timerCount % 16 === 0) {
+            console.log("Multiline comment!\nSecond Line\nThird Line");
+        }
         mpb.incrementTask(task2);
         timerCount++;
     }, 50);
