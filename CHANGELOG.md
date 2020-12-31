@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.1.1](https://github.com/kamiyo/multi-progress-bars/compare/v3.1.0...v3.1.1) (2020-12-31)
+
+
+### Bug Fixes
+
+* **README:** Updated webpack example and detail about percentage in addTask/updateTask. ([ea6183c](https://github.com/kamiyo/multi-progress-bars/commit/ea6183c15e924b963b9ea621ef72859a8b085d8b))
+
 ## [3.1.0](https://github.com/kamiyo/multi-progress-bars/compare/v3.0.0...v3.1.0) (2020-12-31)
 
 
