@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.0.0](https://github.com/kamiyo/multi-progress-bars/compare/v2.0.7...v3.0.0) (2020-12-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* Though not technically breaking (defaults behave as previously), added the option for bottom positioning of progress bars. As a result, the logic is easier. Pass 'bottom' to options.anchor in the constructor to switch. There is also now a options.persist setting. If set to false or left blank, the virtual console will reconnect the original console after all tasks are finished. However, if you call updateTask or similar, it will re-intercept console. If persist is true, it will not reconnect original; intended for use with a perpetual watcher.
+
+### Features
+
+* Option for bottom positioning of progress bars. ([d9379c4](https://github.com/kamiyo/multi-progress-bars/commit/d9379c4abbb15309809802027351a5db6dac3528))
+
 ### [2.0.7](https://github.com/kamiyo/multi-progress-bars/compare/v2.0.6...v2.0.7) (2020-12-31)
 
 
