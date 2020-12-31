@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.6](https://github.com/kamiyo/multi-progress-bars/compare/v2.0.5...v2.0.6) (2020-12-31)
+
+
+### Bug Fixes
+
+* **core:** multi line logs were getting truncated because of faulty logic. Added some comments as well. ([7758974](https://github.com/kamiyo/multi-progress-bars/commit/77589749da18ef454fe435f090a49ba0c4dae752))
+* **example:** Updated example to test for multiline and long console messages. ([a7b373f](https://github.com/kamiyo/multi-progress-bars/commit/a7b373f1f6806328d362919e26f1b1a6b58e458e))
+
 ### [2.0.5](https://github.com/kamiyo/multi-progress-bars/compare/v2.0.4...v2.0.5) (2020-11-05)
 
 
