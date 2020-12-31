@@ -52,9 +52,6 @@ export class VirtualConsole {
 
         this.progressHeight = 0;
         this.progressBuffer = [];
-        this.warn = this.log;
-        this.error = this.log;
-        (console as any) = this;
 
         if (this.anchor === 'top') {
             this.upsertProgress = this.upsertProgressTop;
@@ -69,9 +66,12 @@ export class VirtualConsole {
             this.log = this.logBottom;
             this.done = this.gotoBottom;
         }
+        this.warn = this.log;
+        this.error = this.log;
+
+        (console as any) = this;
 
         this.init();
-
     }
 
     checkConsoleIntercept() {
