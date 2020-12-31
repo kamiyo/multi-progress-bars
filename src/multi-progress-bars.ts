@@ -3,6 +3,7 @@ import { WriteStream } from 'tty';
 import * as path from 'path';
 import { default as stringWidth } from 'string-width';
 import { VirtualConsole } from './virtual-console';
+import { clampString } from './utils';
 
 export type TaskType = 'percentage' | 'indefinite';
 
@@ -61,6 +62,7 @@ export interface CtorOptions {
     initMessage: string;
     anchor: 'top' | 'bottom';
     persist: boolean;
+    border: boolean | string;
 }
 
 export class MultiProgressBars {
@@ -83,6 +85,8 @@ export class MultiProgressBars {
     private resolve: () => void;
     private spinnerGenerator: SpinnerGenerator;
     private logger: VirtualConsole;
+    private border: string;
+    private bottomBorder: string;
     public promise: Promise<void>;
 
     /**
@@ -96,6 +100,7 @@ export class MultiProgressBars {
             spinnerGenerator = this.hilbertSpinner,
             anchor = 'bottom',
             persist = false,
+            border = false,
         } = options || {};
         let {
             progressWidth = 40,
@@ -108,6 +113,9 @@ export class MultiProgressBars {
         this.persist = persist;
         this.spinnerFPS = Math.min(spinnerFPS, 60);
         this.spinnerGenerator = spinnerGenerator;
+        this.border = (typeof border === 'boolean')
+            ? (!border) ? null : '\u2500'
+            : border;
 
         if (progressWidth % 2 !== 0) {
             progressWidth += 1;
@@ -126,11 +134,34 @@ export class MultiProgressBars {
             initMessage = '$ ' + process.argv.map((arg) => {
                 return path.parse(arg).name;
             }).join(' ');
+        } else {
+            initMessage = initMessage.split('\n')[0];
+        }
+        if (this.border) {
+            initMessage = clampString(initMessage, this.logger.width - 10);
+            const startRepeat = (this.border.length > 4) ? 1 : Math.floor(4 / this.border.length);
+            initMessage = this.border.repeat(startRepeat) + ' ' + initMessage + ' ';
+            const currentCount = stringWidth(initMessage);
+            const remaining = this.logger.width - currentCount;
+            const endRepeat = Math.ceil(remaining / this.border.length);
+            initMessage += this.border.repeat(endRepeat);
+            initMessage = clampString(initMessage, this.logger.width);
+        } else {
+            initMessage = clampString(initMessage, this.logger.width);
+        }
+        if (this.border && this.logger.anchor === 'top') {
+            this.bottomBorder =
+                clampString(
+                    this.border.repeat(
+                        Math.ceil(this.logger.width / this.border.length)
+                    ), this.logger.width
+                );
         }
         this.init(initMessage);
     }
 
     public cleanup = () => {
+        this.logger?.done();
         if (this.intervalID) {
             clearInterval(this.intervalID);
         }
@@ -141,15 +172,13 @@ export class MultiProgressBars {
         // setup cleanup
         (process as NodeJS.Process).on('SIGINT', this.cleanup);
 
-        // TODO make this account for lines that wrap
-        const splitMessage = message.split('\n');
-        splitMessage.forEach((msg, idx) => {
-            this.logger.upsertProgress({
-                index: idx,
-                data: msg,
-            });
+
+        this.logger.upsertProgress({
+            index: 0,
+            data: message,
         });
-        this.initialLines = splitMessage.length;
+
+        this.initialLines = 1;
     }
 
     public addTask(name: string, {
@@ -158,7 +187,9 @@ export class MultiProgressBars {
     }: Omit<Task, 'name' | 'done' | 'message'> & Partial<Pick<Task, 'message'>>) {
         // if task exists, update fields
         if (this.tasks[name] !== undefined) {
-            Object.keys(options).forEach((key: keyof Partial<Omit<Task, 'index' | 'name' | 'done'>>) => options[key] === undefined && delete options[key])
+            Object.keys(options).forEach((key: keyof Partial<Omit<Task, 'index' | 'name' | 'done'>>) =>
+                options[key] === undefined && delete options[key]
+            );
             this.tasks[name] = {
                 ...this.tasks[name],
                 ...options,
@@ -263,6 +294,12 @@ export class MultiProgressBars {
             index: task.index + this.initialLines,
             data: this.progressString(task),
         });
+        if (this.bottomBorder) {
+            this.logger.upsertProgress({
+                index: Object.keys(this.tasks).length + this.initialLines,
+                data: this.bottomBorder,
+            });
+        }
     }
 
     public incrementTask(

@@ -20,6 +20,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         initMessage: '$ node build-stuff.js',
         // anchor: 'bottom', <- this is default
         persist: true,
+        border: '.*-^-*',
     });
     process.on('SIGINT', () => {
         clearInterval(timerId);

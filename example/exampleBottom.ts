@@ -12,6 +12,7 @@ const main = async () => {
         initMessage: '$ node build-stuff.js',
         // anchor: 'bottom', <- this is default
         persist: true,
+        border: '.*-^-*',
     });
 
     (process as NodeJS.Process).on('SIGINT', () => {

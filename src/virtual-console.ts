@@ -3,6 +3,7 @@ import { WriteStream } from 'tty';
 import {
     CUP, clampString, ED, ED_MODE, EL, EL_MODE
 } from './utils';
+import stringWidth from 'string-width';
 
 export interface VirtualConsoleCtorOptions {
     stream: WriteStream;
@@ -21,12 +22,12 @@ export interface UpsertProgressOptions extends AddProgressOptions {
 export class VirtualConsole {
     private progressBuffer: string[];
     private consoleBuffer: string[];
-    private width: number;
     private height: number;
     private progressHeight: number;
     private consoleHeight: number;
     private originalConsole: Console;
     private stream: WriteStream;
+    public width: number;
     public anchor: 'top' | 'bottom';
     done: () => void;
     warn: Console['warn'];
@@ -99,7 +100,6 @@ export class VirtualConsole {
     }
 
     init() {
-        (process as NodeJS.Process).on('SIGINT', this.done);
         if (this.anchor === 'top') {
             const blank = '\n'.repeat(this.stream.rows) + CUP(0) + ED(ED_MODE.TO_END);
             this.stream?.write(blank);
@@ -212,8 +212,13 @@ export class VirtualConsole {
         const clampedLines = writeString.split('\n').reduce<string[]>((prev, curr) => {
             const clamped = [];
             do {
-                const front = curr.slice(0, this.width);
-                curr = curr.slice(this.width);
+                let width = curr.length;
+                let front = curr;
+                while (stringWidth(front) > this.width) {
+                    front = curr.slice(0, width)
+                    width--;
+                }
+                curr = curr.slice(width);
                 clamped.push(front);
             } while (curr.length > 0)
             return [...prev, ...clamped];
