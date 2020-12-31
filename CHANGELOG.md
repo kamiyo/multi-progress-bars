@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.1.2](https://github.com/kamiyo/multi-progress-bars/compare/v3.1.1...v3.1.2) (2020-12-31)
+
+
+### Bug Fixes
+
+* **core:** fixed wrong order of assignin warn and error to virtual log. ([2c32749](https://github.com/kamiyo/multi-progress-bars/commit/2c32749cc3937764403e1181942e361a18c1906c))
+
 ### [3.1.1](https://github.com/kamiyo/multi-progress-bars/compare/v3.1.0...v3.1.1) (2020-12-31)
 
 
