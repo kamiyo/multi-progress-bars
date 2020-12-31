@@ -92,7 +92,7 @@ Note: `percentage` is represented as the decimal form, i.e. 0.23 = 23%
 `options` `<object>`:
  * `type` `<'percentage' | 'indefinite'>` required.
  * `index` `<number>` required. default = increment from previous || 0.
- * `percentage` `<number>` optional. The starting percentage (0 to 1). default = `0`
+ * `percentage` `<number>` optional. The starting percentage (0 to 1) if type is `'percentage'`. default = `0`
  * `message` `<string>` optional. A message to print to the right of the bar. default = `''`
  * `barColorFn` `<(s: string) => string>` optional. A function that transforms the bar. Useful for coloring the bar with `chalk.js` or `colors.js`. default = `(s) => s`;
 
@@ -115,7 +115,7 @@ Not only does this method add a new Task, but if you pass in a name that already
 
 `options` `<object>` (unset properties will not affect change):
  * `message` `<string>` optional. A message to print to the right of the bar.
- * `percentage` `<number>` optional. The amount to change the percentage to.
+ * `percentage` `<number>` optional. The amount to change the percentage to if task type is `'percentage'`.
  * `barColorFn` `<(s: string) => string>` optional. A function that transforms the bar.
 
  Calling updateTask with a percentage over 1(00%) will automatically set it to done. Calling updateTask on an task with `done: true` will restart it
@@ -205,7 +205,7 @@ exports.compileTS = compileTS;
 ```
 
 Pair that with a `watch`.
-You can also add Webpack by passing in the mpb instance to your webpack config
+You can also add mpb to your Webpack config by passing in the mpb instance to a function that returns the config:
 
 ```node
 // webpack.dev.config.js
@@ -243,31 +243,30 @@ const { MultiProgressBars } = require('multi-progress-bars');
 const mpb = new MultiProgressBars({ persist: true });
 const webpackConfig = require('./webpack.dev.config.js');
 
-const webpackCompile = (done) => {
+const webpackWatch = (done) => {
     mpb.addTask('Webpack', {
         type: 'percentage',
         index: 0,
     });
-    webpack(webpackConfig(mpb)).run((err, stats) => {
+    const compiler = webpack(webpackConfig(mpb));
+    compiler.hooks.beforeRun.tapAsync('Reset Progress', (p) => {
+        // for restarts
+        mpb.updateTask('Webpack', {
+            percentage: 0,
+        });
+    });
+    compiler.watch({ ignore: /node_modules/ }, (err, stats) => {
         mpb.done('Webpack')
 
         mpb.promise.then(() => {
             console.log(stats.toString());
         });
-        done();
     });
-};
 
-const watchWebpack = (done) => {
-    gulp.watch(
-        ['src/**/*'],
-        { ignoreInitial: false },
-        webpackCompile,
-    );
     done();
 };
 
-exports.watch = watchWebpack;
+exports.watch = webpackWatch;
 ```
 
 N.B. Above code not 100% tested.
