@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.0](https://github.com/kamiyo/multi-progress-bars/compare/v3.0.0...v3.1.0) (2020-12-31)
+
+
+### Features
+
+* **borders:** Added border functionality. ([c6f49f6](https://github.com/kamiyo/multi-progress-bars/commit/c6f49f610d576e8edee9d28fb28b443d35603c31))
+
+
+### Bug Fixes
+
+* **README:** Updated README with v3 info. ([f6675fd](https://github.com/kamiyo/multi-progress-bars/commit/f6675fdafc903d628c5ba5546d3eef827338f081))
+
 ## [3.0.0](https://github.com/kamiyo/multi-progress-bars/compare/v2.0.7...v3.0.0) (2020-12-31)
 
 
