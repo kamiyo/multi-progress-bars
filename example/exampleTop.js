@@ -20,14 +20,15 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         initMessage: '$ node build-stuff.js',
         anchor: 'top',
         persist: true,
+        // border: false,
     });
     process.on('SIGINT', () => {
         clearInterval(timerId);
         clearTimeout(timeoutId);
     });
-    mpb.addTask(task1, { type: 'percentage', index: 0, barColorFn: chalk.yellow, message: 'I move slowwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww' });
-    mpb.addTask(task2, { type: 'percentage', index: 1, barColorFn: chalk.blue, message: chalk.blue('I move fasterrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr') });
-    mpb.addTask(taskInf, { type: 'indefinite', index: 2, barColorFn: chalk.magenta, message: 'I go forever until stopped' });
+    mpb.addTask(task1, { type: 'percentage', barColorFn: chalk.yellow, message: 'I move slowwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww' });
+    mpb.addTask(task2, { type: 'percentage', barColorFn: chalk.blue, message: chalk.blue('I move fasterrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr') });
+    mpb.addTask(taskInf, { type: 'indefinite', barColorFn: chalk.magenta, message: 'I go forever until stopped' });
     let timerCount = 0;
     timerId = setInterval(() => {
         if (timerCount % 2 === 0) {

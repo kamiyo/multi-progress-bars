@@ -22,10 +22,11 @@ export interface Task {
 }
 
 export interface AddOptions {
-    index: number;
+    index?: number;
     type: TaskType;
     message?: string;
     barColorFn?: TransformFn;
+    percentage?: number;
 }
 
 export type UpdateOptions = Partial<Pick<Task, 'message' | 'barColorFn' | 'percentage'>>;
@@ -87,6 +88,7 @@ export class MultiProgressBars {
     private logger: VirtualConsole;
     private border: string;
     private bottomBorder: string;
+    private endIdx = 0;         // 1 past the last index
     public promise: Promise<void>;
 
     /**
@@ -184,7 +186,7 @@ export class MultiProgressBars {
     public addTask(name: string, {
         index,
         ...options
-    }: Omit<Task, 'name' | 'done' | 'message'> & Partial<Pick<Task, 'message'>>) {
+    }: AddOptions) {
         // if task exists, update fields
         if (this.tasks[name] !== undefined) {
             Object.keys(options).forEach((key: keyof Partial<Omit<Task, 'index' | 'name' | 'done'>>) =>
@@ -205,6 +207,14 @@ export class MultiProgressBars {
                 percentage = 0,
                 message = '',
             } = options;
+
+            if (index === undefined) {
+                index = this.endIdx;
+                this.endIdx++;
+            } else if (index >= this.endIdx) {
+                this.endIdx = index + 1;
+            }
+
             this.tasks[name] = {
                 type,
                 barColorFn,
@@ -406,6 +416,16 @@ export class MultiProgressBars {
 
     public close() {
         this.logger.done();
+    }
+
+    // Returns the index of task with supplied name. Returns undefined if name not found.
+    public getIndex(taskName: string) {
+        return this.tasks[taskName]?.index;
+    }
+
+    // Returns the name of the task with given index. Returns undefined if name not found.
+    public getName(index: number) {
+        return Object.entries(this.tasks).find(([ _, task ]) => task.index === index)?.[0];
     }
 
     // TODO maybe make this static?

@@ -27,8 +27,8 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         clearTimeout(timeoutId);
     });
     mpb.addTask(task1, { type: 'percentage', index: 0, barColorFn: chalk.yellow, message: 'I move slowwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww' });
-    mpb.addTask(task2, { type: 'percentage', index: 1, barColorFn: chalk.blue, message: chalk.blue('I move fasterrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr') });
-    mpb.addTask(taskInf, { type: 'indefinite', index: 2, barColorFn: chalk.magenta, message: 'I go forever until stopped' });
+    mpb.addTask(task2, { type: 'percentage', index: 2, barColorFn: chalk.blue, message: chalk.blue('I move fasterrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr') }); // Testing skipping one row
+    mpb.addTask(taskInf, { type: 'indefinite', barColorFn: chalk.magenta, message: 'I go forever until stopped' }); // Make sure that the next one added without index goes after the previous last one.
     let timerCount = 0;
     timerId = setInterval(() => {
         if (timerCount % 2 === 0) {
@@ -50,6 +50,8 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             // or mpb.restart or mpb.addTask with same name;
             mpb.updateTask(taskInf, { message: 'Restarted indefinite task.' });
             timeoutId = setTimeout(() => {
+                console.log(mpb.getIndex(taskInf));
+                console.log(mpb.getName(3));
                 mpb.done(taskInf);
             }, 3000);
         }, 2000);

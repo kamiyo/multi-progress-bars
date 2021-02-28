@@ -91,12 +91,12 @@ Note: `percentage` is represented as the decimal form, i.e. 0.23 = 23%
 
 `options` `<object>`:
  * `type` `<'percentage' | 'indefinite'>` required.
- * `index` `<number>` required. default = increment from previous || 0.
+ * `index` `<number>` optional. default = increment from previous || 0.
  * `percentage` `<number>` optional. The starting percentage (0 to 1) if type is `'percentage'`. default = `0`
  * `message` `<string>` optional. A message to print to the right of the bar. default = `''`
  * `barColorFn` `<(s: string) => string>` optional. A function that transforms the bar. Useful for coloring the bar with `chalk.js` or `colors.js`. default = `(s) => s`;
 
-Not only does this method add a new Task, but if you pass in a name that already exists, it will restart the Task (sets the `percentage` back to `0` and `done` to be `false`). This makes coding reporter logic easier, instead of having to check if the task is done; you can just always call `addTask('Task Name')` at the start of, say, a `watch` function.
+ Not only does this method add a new Task, but if you pass in a name that already exists, it will restart the Task (sets the `percentage` back to `0` and `done` to be `false`). This makes coding reporter logic easier, instead of having to check if the task is done; you can just always call `addTask('Task Name')` at the start of, say, a `watch` function.
 
 ### `mpb.incrementTask(name, options)`
 
@@ -119,6 +119,18 @@ Not only does this method add a new Task, but if you pass in a name that already
  * `barColorFn` `<(s: string) => string>` optional. A function that transforms the bar.
 
  Calling updateTask with a percentage over 1(00%) will automatically set it to done. Calling updateTask on an task with `done: true` will restart it
+
+## `mpb.getIndex(name)`
+
+`name` `<string>` Task name.
+
+ Get the index of the task. If name is not found, returns `undefined`.
+
+## `mpb.getName(index)`
+
+`index` `<number>` Task index.
+
+ Get the name of the task with given index. If the index is not found, returns `undefined`.
 
 ## `mpb.done(name, options)`
 
