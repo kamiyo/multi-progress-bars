@@ -13,8 +13,8 @@
     "release": "standard-version",
     "prepublishOnly": "yarn clean && yarn build",
     "buildExamples": "yarn tsc -b examples",
-    "clean": "yarn trash 'dist/**/*' 'example/example.js'",
-    "runExample": "yarn build && yarn buildExample && yarn node example/exampleBottom.js"
+    "clean": "yarn trash 'dist/**/*' 'examples/*.js'",
+    "runExample": "yarn build && yarn buildExamples && yarn node examples/exampleBottom.js"
   },
   "author": "Sean Chen <kamiyo@gmail.com>",
   "keywords": [

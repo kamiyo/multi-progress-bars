@@ -1,4 +1,4 @@
-import { MultiProgressBars } from '../dist';
+import { MultiProgressBars } from '../';
 import * as chalk from 'chalk';
 
 let timerId: NodeJS.Timeout, timeoutId: NodeJS.Timeout;
