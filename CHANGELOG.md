@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.2.2](https://github.com/kamiyo/multi-progress-bars/compare/v3.2.1...v3.2.2) (2021-03-08)
+
+
+### Bug Fixes
+
+* **examples:** main import fix ([8aae7ca](https://github.com/kamiyo/multi-progress-bars/commit/8aae7ca293f3b05635082c1e293036c02a812966))
+
 ### [3.2.1](https://github.com/kamiyo/multi-progress-bars/compare/v3.2.0...v3.2.1) (2021-03-08)
 
 
