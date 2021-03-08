@@ -167,6 +167,9 @@ export class MultiProgressBars {
         if (this.intervalID) {
             clearInterval(this.intervalID);
         }
+        // according to node docs, if there's a handler for SIGINT, default behavior
+        // (exiting) is removed, so we have to add it back ourselves.
+        process.exit();
     }
 
     private init(message: string) {
