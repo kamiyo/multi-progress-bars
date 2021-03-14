@@ -177,7 +177,6 @@ export class MultiProgressBars {
         // setup cleanup
         (process as NodeJS.Process).on('SIGINT', this.cleanup);
 
-
         this.logger.upsertProgress({
             index: 0,
             data: message,
@@ -235,7 +234,6 @@ export class MultiProgressBars {
             this.t = 0;
             this.intervalID = setInterval(() => this.renderIndefinite(), 1000 / this.spinnerFPS);
         } else if (options.type === 'percentage') {
-            this.tasks[name].percentage = 0;
             this.writeTask(this.tasks[name]);
         }
 
