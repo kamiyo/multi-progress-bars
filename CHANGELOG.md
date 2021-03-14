@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.2.3](https://github.com/kamiyo/multi-progress-bars/compare/v3.2.2...v3.2.3) (2021-03-14)
+
+
+### Bug Fixes
+
+* **core:** incorrectly forced percentage to 0 on new addTask. ([aab9414](https://github.com/kamiyo/multi-progress-bars/commit/aab9414885c6424ec3ab3406539f9a0fe5b6f41f))
+
 ### [3.2.2](https://github.com/kamiyo/multi-progress-bars/compare/v3.2.1...v3.2.2) (2021-03-08)
 
 
