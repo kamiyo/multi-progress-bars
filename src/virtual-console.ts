@@ -83,8 +83,11 @@ export class VirtualConsole {
 
     // height is one less than rows, because if you print to the last line, the console usually adds a newline
     resize() {
-        this.width = process.stdout.columns;
-        this.height = process.stdout.rows - 1;
+        // see https://github.com/kamiyo/multi-progress-bars/issues/7    
+        const stdout = process.stdout.isTTY ? process.stdout : process.stderr;
+
+        this.width = stdout.columns;
+        this.height = stdout.rows - 1;
     }
 
     gotoBottom() {
