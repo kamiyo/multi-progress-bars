@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.2.4](https://github.com/kamiyo/multi-progress-bars/compare/v3.2.3...v3.2.4) (2021-04-16)
+
+
+### Bug Fixes
+
+* when stdout is not a TTY, updates to the UI cause scrolling ([2e74297](https://github.com/kamiyo/multi-progress-bars/commit/2e742971c182e9c92872dfab723afd268d04714a)), closes [#7](https://github.com/kamiyo/multi-progress-bars/issues/7)
+
 ### [3.2.3](https://github.com/kamiyo/multi-progress-bars/compare/v3.2.2...v3.2.3) (2021-03-14)
 
 
