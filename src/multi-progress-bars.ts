@@ -97,7 +97,8 @@ export class MultiProgressBars {
      */
     public constructor(options?: Partial<CtorOptions>) {
         const {
-            stream = process.stdout,
+            // see https://github.com/kamiyo/multi-progress-bars/issues/7
+            stream = process.stdout.isTTY ? process.stdout : process.stderr,
             spinnerFPS = 10,
             spinnerGenerator = this.hilbertSpinner,
             anchor = 'bottom',
@@ -177,12 +178,12 @@ export class MultiProgressBars {
         // setup cleanup
         (process as NodeJS.Process).on('SIGINT', this.cleanup);
 
-        this.logger.upsertProgress({
+        message && this.logger.upsertProgress({
             index: 0,
             data: message,
         });
 
-        this.initialLines = 1;
+        this.initialLines = message ? 1 : 0;
     }
 
     public addTask(name: string, {
@@ -243,10 +244,36 @@ export class MultiProgressBars {
         // Reset promise for end hook
         this.promise = new Promise((res, _) => this.resolve = res);
 
+        // Rerender other tasks so that task names are padded correctly.
+        Object.values(this.tasks).forEach((task) => {
+            this.writeTask(task);
+        });
+
+        this.logger.refresh();
+    }
+
+    public isDone(name: string) {
+        return this.tasks[name].done;
+    }
+
+    public removeTask(name: string) {
+        const idxToRemove = this.tasks[name].index;
+        delete this.tasks[name];
+        this.longestNameLength = Object.entries(this.tasks).reduce((prev, [taskName, { index }]) => {
+            // What?! Side-effects in reduce?!
+            // Don't worry, we're not functional purists here.
+            // Decrement all indexes after the one to remove.
+            if (index > idxToRemove) {
+                this.tasks[taskName].index--;
+            }
+
+            return Math.max(prev, stringWidth(taskName));
+        }, 0);
+
         // Rerender previously finished tasks so that the task names are padded correctly.
         // Do this by calling done() again.
-        Object.entries(this.tasks).forEach(([name, { done, type, message }]) => {
-            if (done && type === 'indefinite') {
+        Object.entries(this.tasks).forEach(([name, { done, message }]) => {
+            if (done) {
                 this.done(name, { message });
             }
         });
@@ -360,6 +387,7 @@ export class MultiProgressBars {
         }
 
         this.writeTask(this.tasks[name]);
+        this.logger.refresh();
     }
 
     public done(name: string, { message = chalk.green('Finished'), ...options }: Pick<UpdateOptions, 'message' | 'barColorFn'> = {}) {
@@ -380,9 +408,10 @@ export class MultiProgressBars {
             index: task.index + this.initialLines,
             data: name.padStart(this.longestNameLength) + ': ' + bar + ' ' + message,
         });
+        this.logger.refresh();
 
         // Stop animation if all tasks are done, and resolve the promise.
-        if (Object.entries(this.tasks).reduce((prev, [_, curr]) => {
+        if (Object.values(this.tasks).reduce((prev, curr) => {
             return prev && curr.done
         }, true)) {
             clearInterval(this.intervalID);
@@ -410,6 +439,7 @@ export class MultiProgressBars {
         } else if (this.tasks[name].type === 'percentage') {
             this.tasks[name].percentage = 0;
             this.writeTask(this.tasks[name]);
+            this.logger.refresh();
         }
 
         this.promise = new Promise((res, _) => this.resolve = res);
@@ -466,7 +496,6 @@ export class MultiProgressBars {
                 this.logger.upsertProgress({
                     index: task.index + this.initialLines,
                     data: progressString,
-                    refresh: false,
                 });
             }
         });
