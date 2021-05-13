@@ -57,13 +57,13 @@ export class VirtualConsole {
             this.upsertProgress = this.upsertProgressTop;
             this.writeLines = this.writeLinesTop;
             this.refresh = this.refreshTop;
-            this.log = this.logTop;
+            this.log = process.stdout.isTTY ? this.logTop : this.originalConsole.log;
             this.done = this.cleanup;
         } else {
             this.upsertProgress = this.upsertProgressBottom;
             this.writeLines = this.writeLinesBottom;
             this.refresh = this.refreshBottom;
-            this.log = this.logBottom;
+            this.log = process.stdout.isTTY ? this.logBottom : this.originalConsole.log;
             this.done = this.gotoBottom;
         }
         this.warn = this.log;
