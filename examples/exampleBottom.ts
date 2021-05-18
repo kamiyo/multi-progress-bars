@@ -3,7 +3,7 @@ import * as chalk from 'chalk';
 
 let timerId: NodeJS.Timeout, timeoutId: NodeJS.Timeout;
 
-const main = async () => {
+const testBasic = async () => {
 
     const task1 = 'Task 1';
     const task2 = chalk.yellow('Task 2');
@@ -60,4 +60,42 @@ const main = async () => {
     console.log("Final Status Message!");
 };
 
-main();
+const testOverflow = async () => {
+    const mpb = new MultiProgressBars({
+        initMessage: ' Overflow ',
+        anchor: 'bottom',
+        persist: true,
+        border: true,
+    });
+
+    let count = 0;
+    const addTaskTimerId = setInterval(() => {
+        const taskName = 'Task ' + count;
+        mpb.addTask(taskName, { type: 'percentage', percentage: 0 });
+        const innerTimerId = setInterval(() => {
+            mpb.incrementTask(taskName, { percentage: 0.05 });
+            if (mpb.isDone(taskName)) {
+                // mpb.removeTask(taskName);
+                clearInterval(innerTimerId);
+            }
+        }, 100);
+        count++;
+        if (count == 40) {
+            clearInterval(addTaskTimerId);
+        }
+        if (count % 5 === 0) {
+            console.log(count);
+        }
+    }, 200);
+    console.log('1\n2\n3\n4\n5');
+
+    await mpb.promise;
+    mpb.close();
+}
+
+(async () => {
+    console.log('Basic Bottom Anchor Functionality Test');
+    await testBasic();
+    console.log('Bottom Overflow Test');
+    await testOverflow();
+})();

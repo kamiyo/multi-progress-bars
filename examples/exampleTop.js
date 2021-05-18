@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const __1 = require("../");
 const chalk = require("chalk");
 let timerId, timeoutId;
-const main = () => __awaiter(void 0, void 0, void 0, function* () {
+const testBasic = () => __awaiter(void 0, void 0, void 0, function* () {
     const task1 = 'Task 1';
     const task2 = chalk.yellow('Task 2');
     const taskInf = 'Task \u221e';
@@ -60,22 +60,12 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     mpb.close();
     console.log("Final Status Message!");
 });
-const main2 = () => {
-    let count = 0;
-    timerId = setInterval(() => {
-        process.stdout.write(count + '\n' + count + '\n');
-        count++;
-    }, 500);
-    timeoutId = setTimeout(() => {
-        clearInterval(timerId);
-    }, 5000);
-};
-const main3 = () => __awaiter(void 0, void 0, void 0, function* () {
+const testOverflow = () => __awaiter(void 0, void 0, void 0, function* () {
     const mpb = new __1.MultiProgressBars({
-        initMessage: ' whoa ',
+        initMessage: ' Overflow ',
         anchor: 'top',
         persist: true,
-        // border: false,
+        border: true,
     });
     let count = 0;
     const addTaskTimerId = setInterval(() => {
@@ -89,27 +79,20 @@ const main3 = () => __awaiter(void 0, void 0, void 0, function* () {
             }
         }, 100);
         count++;
-        if (count == 50) {
+        if (count == 40) {
             clearInterval(addTaskTimerId);
         }
-    }, 500);
-    // while (count < 40) {
-    //     mpb.addTask('Task ' + count, { type: 'percentage', percentage: 1.0 });
-    //     count++;
-    // }
-    // count = 0;
-    // while (count < 40) {
-    //     mpb.done('Task ' + count);
-    //     count++;
-    // }
-    // mpb.addTask('Task 40', { type: 'percentage' });
-    // timerId = setInterval(() => {
-    //     mpb.incrementTask('Task 40', { percentage: 0.01, message: 'A'.repeat(200) });
-    // }, 33);
+        if (count % 5 === 0) {
+            console.log(count);
+        }
+    }, 200);
+    console.log('1\n2\n3\n4\n5');
     yield mpb.promise;
-    // clearInterval(timerId);
     mpb.close();
 });
-main3();
-// main2();
-// main();
+(() => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('Basic Top Anchor Functionality Test');
+    yield testBasic();
+    console.log('Top Overflow Test');
+    yield testOverflow();
+}))();

@@ -1,9 +1,10 @@
 import { MultiProgressBars } from '../';
+
 import * as chalk from 'chalk';
 
 let timerId: NodeJS.Timeout, timeoutId: NodeJS.Timeout;
 
-const main = async () => {
+const testBasic = async () => {
 
     const task1 = 'Task 1';
     const task2 = chalk.yellow('Task 2');
@@ -58,24 +59,12 @@ const main = async () => {
     console.log("Final Status Message!");
 };
 
-const main2 = () => {
-    let count = 0;
-    timerId = setInterval(() => {
-        process.stdout.write(count + '\n' + count + '\n');
-        count++
-    }, 500);
-
-    timeoutId = setTimeout(() => {
-        clearInterval(timerId);
-    }, 5000);
-};
-
-const main3 = async () => {
+const testOverflow = async () => {
     const mpb = new MultiProgressBars({
-        initMessage: ' whoa ',
+        initMessage: ' Overflow ',
         anchor: 'top',
         persist: true,
-        // border: false,
+        border: true,
     });
 
     let count = 0;
@@ -90,32 +79,22 @@ const main3 = async () => {
             }
         }, 100);
         count++;
-        if (count == 50) {
+        if (count == 40) {
             clearInterval(addTaskTimerId);
         }
-    }, 500);
+        if (count % 5 === 0) {
+            console.log(count);
+        }
+    }, 200);
+    console.log('1\n2\n3\n4\n5');
 
-    // while (count < 40) {
-    //     mpb.addTask('Task ' + count, { type: 'percentage', percentage: 1.0 });
-    //     count++;
-    // }
-    // count = 0;
-    // while (count < 40) {
-    //     mpb.done('Task ' + count);
-    //     count++;
-    // }
-
-    // mpb.addTask('Task 40', { type: 'percentage' });
-    // timerId = setInterval(() => {
-    //     mpb.incrementTask('Task 40', { percentage: 0.01, message: 'A'.repeat(200) });
-    // }, 33);
     await mpb.promise;
-    // clearInterval(timerId);
     mpb.close();
 }
 
-main3();
-
-// main2();
-
-// main();
+(async () => {
+    console.log('Basic Top Anchor Functionality Test');
+    await testBasic();
+    console.log('Top Overflow Test');
+    await testOverflow();
+})();
