@@ -1,4 +1,5 @@
 import { default as stringWidth } from 'string-width';
+import { format } from 'util';
 
 const ESC = '\x1B';
 const CSI = ESC + '[';
@@ -103,4 +104,22 @@ export const clampString = (message: string, width: number) => {
         message = message.slice(0, message.length - 1);
     }
     return message + RESET;
+};
+
+// Split by newlines, and then split the resulting lines if they run longer than width.
+export const splitLinesAndClamp = (writeString: string, maxWidth: number) => {
+    return writeString.split('\n').reduce<string[]>((prev, curr) => {
+        const clamped = [];
+        do {
+            let width = curr.length;
+            let front = curr;
+            while (stringWidth(front) > maxWidth) {
+                front = curr.slice(0, width)
+                width--;
+            }
+            curr = curr.slice(width);
+            clamped.push(front);
+        } while (curr.length > 0)
+        return [...prev, ...clamped];
+    }, []);
 };

@@ -2,7 +2,7 @@ import * as chalk from 'chalk';
 import { WriteStream } from 'tty';
 import * as path from 'path';
 import { default as stringWidth } from 'string-width';
-import { VirtualConsole } from './virtual-console';
+import { VirtualConsole, VirtualConsoleBottom, VirtualConsoleTop } from './virtual-console';
 import { clampString } from './utils';
 
 export type TaskType = 'percentage' | 'indefinite';
@@ -69,7 +69,7 @@ export interface CtorOptions {
 export class MultiProgressBars {
     private tasks: Tasks = {};
     private spinnerFPS: number;
-    private initialLines: number;
+    // private initialLines: number;
     private progressWidth: number;
     private CHARS = ['\u258F', '\u258E', '\u258D', '\u258C', '\u258B', '\u258A', '\u2589', '\u2588'];
     private SPACE_FILLING_1 = ['\u2801', '\u2809', '\u2819', '\u281B', '\u281E', '\u2856', '\u28C6', '\u28E4',
@@ -89,6 +89,7 @@ export class MultiProgressBars {
     private border: string;
     private bottomBorder: string;
     private endIdx = 0;         // 1 past the last index
+    private allFinished = false;
     public promise: Promise<void>;
 
     /**
@@ -97,7 +98,8 @@ export class MultiProgressBars {
      */
     public constructor(options?: Partial<CtorOptions>) {
         const {
-            stream = process.stdout,
+            // see https://github.com/kamiyo/multi-progress-bars/issues/7
+            stream = process.stdout.isTTY ? process.stdout : process.stderr,
             spinnerFPS = 10,
             spinnerGenerator = this.hilbertSpinner,
             anchor = 'bottom',
@@ -110,13 +112,16 @@ export class MultiProgressBars {
             initMessage,
         } = options || {};
 
-        this.logger = new VirtualConsole({ stream, anchor });
+        this.logger = (anchor === 'top') ?
+            new VirtualConsoleTop({ stream })
+            : new VirtualConsoleBottom({ stream });
 
         this.persist = persist;
         this.spinnerFPS = Math.min(spinnerFPS, 60);
         this.spinnerGenerator = spinnerGenerator;
         this.border = (typeof border === 'boolean')
-            ? (!border) ? null : '\u2500'
+            ? (!border)
+                ? null : '\u2500'
             : border;
 
         if (progressWidth % 2 !== 0) {
@@ -151,7 +156,7 @@ export class MultiProgressBars {
         } else {
             initMessage = clampString(initMessage, this.logger.width);
         }
-        if (this.border && this.logger.anchor === 'top') {
+        if (this.border && anchor === 'top') {
             this.bottomBorder =
                 clampString(
                     this.border.repeat(
@@ -177,18 +182,17 @@ export class MultiProgressBars {
         // setup cleanup
         (process as NodeJS.Process).on('SIGINT', this.cleanup);
 
-        this.logger.upsertProgress({
-            index: 0,
-            data: message,
-        });
+        message && this.logger.setTopBorder(message);
+        (this.bottomBorder !== undefined) && this.logger.setBottomBorder(this.bottomBorder);
 
-        this.initialLines = 1;
+        this.promise = new Promise((res, _) => this.resolve = res);
     }
 
     public addTask(name: string, {
         index,
         ...options
     }: AddOptions) {
+        this.restartPromiseIfNeeded();
         // if task exists, update fields
         if (this.tasks[name] !== undefined) {
             Object.keys(options).forEach((key: keyof Partial<Omit<Task, 'index' | 'name' | 'done'>>) =>
@@ -240,17 +244,49 @@ export class MultiProgressBars {
         // Calculated longest name to pad other names to.
         this.longestNameLength = Math.max(this.longestNameLength, stringWidth(name));
 
-        // Reset promise for end hook
-        this.promise = new Promise((res, _) => this.resolve = res);
-
-        // Rerender previously finished tasks so that the task names are padded correctly.
-        // Do this by calling done() again.
-        Object.entries(this.tasks).forEach(([name, { done, type, message }]) => {
-            if (done && type === 'indefinite') {
-                this.done(name, { message });
-            }
+        // Rerender other tasks so that task names are padded correctly.
+        Object.values(this.tasks).forEach((task) => {
+            this.writeTask(task);
         });
+
+        this.logger.refresh();
     }
+
+    // Call this BEFORE you add a new task to the list
+    private restartPromiseIfNeeded() {
+        // check if allFinished previously
+        if (this.allFinished) {
+            this.allFinished = false;
+            this.promise = new Promise((res) => this.resolve = res);
+        }
+    }
+
+    public isDone(name: string) {
+        return this.tasks[name].done;
+    }
+
+    // public removeTask(name: string) {
+    //     const idxToRemove = this.tasks[name].index;
+    //     delete this.tasks[name];
+    //     this.longestNameLength = Object.entries(this.tasks).reduce((prev, [taskName, { index }]) => {
+    //         // What?! Side-effects in reduce?!
+    //         // Don't worry, we're not functional purists here.
+    //         // Decrement all indexes after the one to remove.
+    //         if (index > idxToRemove) {
+    //             this.tasks[taskName].index--;
+    //         }
+
+    //         return Math.max(prev, stringWidth(taskName));
+    //     }, 0);
+
+    //     // Rerender previously finished tasks so that the task names are padded correctly.
+    //     // Do this by calling done() again.
+    //     Object.entries(this.tasks).forEach(([name, { done, message }]) => {
+    //         if (done) {
+    //             this.done(name, { message });
+    //         }
+    //     });
+    // }
 
     private progressString(task: Task) {
         const {
@@ -302,15 +338,9 @@ export class MultiProgressBars {
 
     private writeTask(task: Task) {
         this.logger.upsertProgress({
-            index: task.index + this.initialLines,
+            index: task.index,
             data: this.progressString(task),
         });
-        if (this.bottomBorder) {
-            this.logger.upsertProgress({
-                index: Object.keys(this.tasks).length + this.initialLines,
-                data: this.bottomBorder,
-            });
-        }
     }
 
     public incrementTask(
@@ -335,7 +365,10 @@ export class MultiProgressBars {
     }
 
     public updateTask(name: string, options: UpdateOptions = {}) {
-        if (this.tasks[name] === undefined) throw new ReferenceError('Task does not exist.')
+        if (this.tasks[name] === undefined) {
+            throw new ReferenceError('Task does not exist.');
+        }
+        this.restartPromiseIfNeeded();
         const task = this.tasks[name];
 
         // Going over 1(00%) calls done
@@ -353,13 +386,12 @@ export class MultiProgressBars {
             if (!this.intervalID) {
                 this.t = 0;
                 this.intervalID = setInterval(() => this.renderIndefinite(), 1000 / this.spinnerFPS);
-
-                this.promise = new Promise((res, _) => this.resolve = res);
             }
             return;
         }
 
         this.writeTask(this.tasks[name]);
+        this.logger.refresh();
     }
 
     public done(name: string, { message = chalk.green('Finished'), ...options }: Pick<UpdateOptions, 'message' | 'barColorFn'> = {}) {
@@ -374,19 +406,16 @@ export class MultiProgressBars {
 
         const task = this.tasks[name];
 
-        const bar = task.barColorFn(this.FULL_CHAR.repeat(this.progressWidth));
-
-        this.logger.upsertProgress({
-            index: task.index + this.initialLines,
-            data: name.padStart(this.longestNameLength) + ': ' + bar + ' ' + message,
-        });
+        this.writeTask(task);
+        this.logger.refresh();
 
         // Stop animation if all tasks are done, and resolve the promise.
-        if (Object.entries(this.tasks).reduce((prev, [_, curr]) => {
+        if (Object.values(this.tasks).reduce((prev, curr) => {
             return prev && curr.done
         }, true)) {
             clearInterval(this.intervalID);
             this.intervalID = null;
+            this.allFinished = true;
             this.resolve();
             if (!this.persist) {
                 this.logger.done();
@@ -395,7 +424,10 @@ export class MultiProgressBars {
     }
 
     public restart(name: string, options: Pick<UpdateOptions, 'message' | 'barColorFn'>) {
-        if (this.tasks[name] === undefined) throw new ReferenceError('Task does not exist.')
+        this.restartPromiseIfNeeded();
+        if (this.tasks[name] === undefined) {
+            throw new ReferenceError('Task does not exist.');
+        }
         this.tasks[name] = {
             ...this.tasks[name],
             ...options,
@@ -410,13 +442,13 @@ export class MultiProgressBars {
         } else if (this.tasks[name].type === 'percentage') {
             this.tasks[name].percentage = 0;
             this.writeTask(this.tasks[name]);
+            this.logger.refresh();
         }
 
-        this.promise = new Promise((res, _) => this.resolve = res);
     }
 
     public close() {
-        this.logger.done();
+        this.logger?.done();
     }
 
     // Returns the index of task with supplied name. Returns undefined if name not found.
@@ -426,7 +458,7 @@ export class MultiProgressBars {
 
     // Returns the name of the task with given index. Returns undefined if name not found.
     public getName(index: number) {
-        return Object.entries(this.tasks).find(([ _, task ]) => task.index === index)?.[0];
+        return Object.entries(this.tasks).find(([_, task]) => task.index === index)?.[0];
     }
 
     // TODO maybe make this static?
@@ -464,9 +496,8 @@ export class MultiProgressBars {
             if (task.type === 'indefinite' && task.done === false) {
                 let progressString = this.indefiniteString(task, spinner);
                 this.logger.upsertProgress({
-                    index: task.index + this.initialLines,
+                    index: task.index,
                     data: progressString,
-                    refresh: false,
                 });
             }
         });

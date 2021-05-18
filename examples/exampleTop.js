@@ -1,31 +1,35 @@
-import { MultiProgressBars } from '../';
-
-import * as chalk from 'chalk';
-
-let timerId: NodeJS.Timeout, timeoutId: NodeJS.Timeout;
-
-const testBasic = async () => {
-
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const __1 = require("../");
+const chalk = require("chalk");
+let timerId, timeoutId;
+const testBasic = () => __awaiter(void 0, void 0, void 0, function* () {
     const task1 = 'Task 1';
     const task2 = chalk.yellow('Task 2');
     const taskInf = 'Task \u221e';
-    const mpb = new MultiProgressBars({
+    const mpb = new __1.MultiProgressBars({
         initMessage: '$ node build-stuff.js',
         anchor: 'top',
         persist: true,
         // border: false,
     });
-
-    (process as NodeJS.Process).on('SIGINT', () => {
+    process.on('SIGINT', () => {
         clearInterval(timerId);
         clearTimeout(timeoutId);
         process.exit();
     });
-
     mpb.addTask(task1, { type: 'percentage', percentage: 0.2, barColorFn: chalk.yellow, message: 'I move slowwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww' });
     mpb.addTask(task2, { type: 'percentage', barColorFn: chalk.blue, message: chalk.blue('I move fasterrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr') });
     mpb.addTask(taskInf, { type: 'indefinite', barColorFn: chalk.magenta, message: 'I go forever until stopped' });
-
     let timerCount = 0;
     timerId = setInterval(() => {
         if (timerCount % 2 === 0) {
@@ -41,7 +45,6 @@ const testBasic = async () => {
         mpb.incrementTask(task2);
         timerCount++;
     }, 50);
-
     timeoutId = setTimeout(() => {
         mpb.done(taskInf);
         timeoutId = setTimeout(() => {
@@ -52,21 +55,18 @@ const testBasic = async () => {
             }, 3000);
         }, 2000);
     }, 5000);
-
-    await mpb.promise;
+    yield mpb.promise;
     clearInterval(timerId);
     mpb.close();
     console.log("Final Status Message!");
-};
-
-const testOverflow = async () => {
-    const mpb = new MultiProgressBars({
+});
+const testOverflow = () => __awaiter(void 0, void 0, void 0, function* () {
+    const mpb = new __1.MultiProgressBars({
         initMessage: ' Overflow ',
         anchor: 'top',
         persist: true,
         border: true,
     });
-
     let count = 0;
     const addTaskTimerId = setInterval(() => {
         const taskName = 'Task ' + count;
@@ -87,14 +87,12 @@ const testOverflow = async () => {
         }
     }, 200);
     console.log('1\n2\n3\n4\n5');
-
-    await mpb.promise;
+    yield mpb.promise;
     mpb.close();
-}
-
-(async () => {
+});
+(() => __awaiter(void 0, void 0, void 0, function* () {
     console.log('Basic Top Anchor Functionality Test');
-    await testBasic();
+    yield testBasic();
     console.log('Top Overflow Test');
-    await testOverflow();
-})();
+    yield testOverflow();
+}))();
