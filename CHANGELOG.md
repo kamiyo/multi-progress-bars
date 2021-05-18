@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.0.0-alpha.0](https://github.com/kamiyo/multi-progress-bars/compare/v3.2.4...v4.0.0-alpha.0) (2021-05-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* **core:** When number of bars overflow console height, only the last N are shown. Upon closing mpb, it will dump the entire progress buffer, so everything will be visible in scrollback.
+
+### Features
+
+* **core:** When number of bars overflow console height, only the last N are shown. Upon closing mpb, it will dump the entire progress buffer, so everything will be visible in scrollback. ([619132a](https://github.com/kamiyo/multi-progress-bars/commit/619132a6e553330b93087ae5d9dd615e7a8d806f))
+
+
+### Bug Fixes
+
+* **core:** Fix issue [#11](https://github.com/kamiyo/multi-progress-bars/issues/11) ([5cdac93](https://github.com/kamiyo/multi-progress-bars/commit/5cdac935f16be1249ed00c43255acf14693207d7))
+
 ### [3.2.4](https://github.com/kamiyo/multi-progress-bars/compare/v3.2.3...v3.2.4) (2021-04-16)
 
 
