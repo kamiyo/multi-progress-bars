@@ -46,6 +46,10 @@ export class VirtualConsole {
         this.progressHeight = 0;
         this.progressBuffer = [];
 
+        if (!process.stdout.isTTY) {
+            this.log = console.log;
+        }
+
         this.warn = this.log;
         this.error = this.log;
 
