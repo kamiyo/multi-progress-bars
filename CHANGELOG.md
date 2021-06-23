@@ -4,10 +4,34 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [4.0.0](https://github.com/kamiyo/multi-progress-bars/compare/v4.0.0-alpha.0...v4.0.0) (2021-06-23)
 
-
 ### Bug Fixes
 
 * **dep:** Update node requirements ([92d95d5](https://github.com/kamiyo/multi-progress-bars/commit/92d95d5a329b354fdd4965ed6939102b78c22202))
+* **dep:** Pin string-width and strip-ansi version to before they moved to es-modules
+
+* **core:** promise resetting was broken
+* **core:** bottom-anchored progress bars now has bottom border as well.
+
+### Features
+
+* **core:** barColorFn renamed to barTransformFn
+* **core:** added nameTransformFn property
+* **core:** added removeTask
+* **core:** added extended border options
+* **core:** crawler improvements
+* **core:** properly handle vertically overflowed progresses
+* **core:** dump entire progress buffer on close() or all-complete if there was overflow
+
+* **docs:** Split readme up into docs, and add updated gifs.
+* **docs:** Add LICENSE
+
+* **example:** merged top and bottom examples, and added cli options for running them.
+
+### Refactor
+
+* **core:** rewrite virtual-console to allow for overflow and removing.
+* **core:** clean-up constructor code.
+* **utils:** I dunno why, but template strings for the escape codes.
 
 ## [4.0.0-alpha.0](https://github.com/kamiyo/multi-progress-bars/compare/v3.2.4...v4.0.0-alpha.0) (2021-05-18)
 
