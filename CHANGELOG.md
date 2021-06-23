@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.0.0](https://github.com/kamiyo/multi-progress-bars/compare/v4.0.0-alpha.0...v4.0.0) (2021-06-23)
+
+
+### Bug Fixes
+
+* **dep:** Update node requirements ([92d95d5](https://github.com/kamiyo/multi-progress-bars/commit/92d95d5a329b354fdd4965ed6939102b78c22202))
+
 ## [4.0.0-alpha.0](https://github.com/kamiyo/multi-progress-bars/compare/v3.2.4...v4.0.0-alpha.0) (2021-05-18)
 
 
