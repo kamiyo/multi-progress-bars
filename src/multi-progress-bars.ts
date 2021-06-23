@@ -1,13 +1,15 @@
 import * as chalk from 'chalk';
 import { WriteStream } from 'tty';
 import * as path from 'path';
-import { default as stringWidth } from 'string-width';
-import { VirtualConsole, VirtualConsoleBottom, VirtualConsoleTop } from './virtual-console';
+import stringWidth from 'string-width';
+import stripAnsi from 'strip-ansi';
+import { VirtualConsole } from './virtual-console';
 import { clampString } from './utils';
 
 export type TaskType = 'percentage' | 'indefinite';
 
 type TransformFn = (bar: string) => string;
+type Anchor = 'top' | 'bottom';
 
 const defaultTransformFn: TransformFn = (s: string) => s;
 
@@ -16,7 +18,8 @@ export interface Task {
     index: number;
     type: TaskType;
     message: string;
-    barColorFn: TransformFn;
+    barTransformFn: TransformFn;
+    nameTransformFn: TransformFn;
     percentage?: number;
     done: boolean;
 }
@@ -25,11 +28,12 @@ export interface AddOptions {
     index?: number;
     type: TaskType;
     message?: string;
-    barColorFn?: TransformFn;
+    nameTransformFn?: TransformFn;
+    barTransformFn?: TransformFn;
     percentage?: number;
 }
 
-export type UpdateOptions = Partial<Pick<Task, 'message' | 'barColorFn' | 'percentage'>>;
+export type UpdateOptions = Partial<Pick<Task, 'message' | 'barTransformFn' | 'percentage' | 'nameTransformFn'>>;
 
 export interface Tasks {
     [key: string]: Task;
@@ -46,13 +50,28 @@ export interface Tasks {
 export type SpinnerGenerator = (t: number, width: number) => string;
 
 /**
+ * Options for setting the border, all optional
+ */
+export interface Border {
+    message?: string;
+    pattern?: string;
+    left?: number;
+    right?: number;
+}
+
+/**
  * Constructor Options
  * @param stream            A node TTY stream
  * @param spinnerFPS        FPS to run the indefinite spinner
  * @param numCrawlers       Optional: Number of crawlers for the indefinite spinner
  * @param progressWidth     Width of the progress bar
  * @param spinnerGenerator  See SpinnerGenerator type
- * @param initMessage       Message to display above the bars
+ * @param initMessage       Message to display in the header
+ * @param border            boolean or a string for the border design
+ * @param anchor            'top' or 'bottom', default 'bottom'
+ * @param persist           Keep console override even if all progress bars are 100%
+ * @param header            Optional: Border object, string, or boolean. Will override initMessage and border if provided
+ * @param footer            Optional: Border object, string, or boolean.
  */
 export interface CtorOptions {
     stream: WriteStream;
@@ -61,23 +80,29 @@ export interface CtorOptions {
     progressWidth: number;
     spinnerGenerator: SpinnerGenerator;
     initMessage: string;
-    anchor: 'top' | 'bottom';
+    anchor: Anchor;
     persist: boolean;
     border: boolean | string;
+    header: Border | string | boolean;
+    footer: Border | string | boolean;
 }
+
+const CHARS = ['\u258F', '\u258E', '\u258D', '\u258C', '\u258B', '\u258A', '\u2589', '\u2588'];
+const FRAC_CHARS = CHARS.slice(0, CHARS.length - 1);
+const FULL_CHAR = CHARS[CHARS.length - 1];
+
+const SPACE_FILLING_1 = ['\u2801', '\u2809', '\u2819', '\u281B', '\u281E', '\u2856', '\u28C6', '\u28E4',
+'\u28E0', '\u28A0', '\u2820'];
+const SPACE_FILLING_2 = ['\u2804', '\u2844', '\u28C4', '\u28E4', '\u28F0', '\u28B2', '\u2833', '\u281B', '\u280B',
+'\u2809', '\u2808'];
+
+const DEFAULT_BORDER = '\u2500';
 
 export class MultiProgressBars {
     private tasks: Tasks = {};
     private spinnerFPS: number;
-    // private initialLines: number;
     private progressWidth: number;
-    private CHARS = ['\u258F', '\u258E', '\u258D', '\u258C', '\u258B', '\u258A', '\u2589', '\u2588'];
-    private SPACE_FILLING_1 = ['\u2801', '\u2809', '\u2819', '\u281B', '\u281E', '\u2856', '\u28C6', '\u28E4',
-        '\u28E0', '\u28A0', '\u2820'];
-    private SPACE_FILLING_2 = ['\u2804', '\u2844', '\u28C4', '\u28E4', '\u28F0', '\u28B2', '\u2833', '\u281B', '\u280B',
-        '\u2809', '\u2808'];
-    private FRAC_CHARS = this.CHARS.slice(0, this.CHARS.length - 1);
-    private FULL_CHAR = this.CHARS[this.CHARS.length - 1];
+
     private persist: boolean;
     private intervalID: NodeJS.Timeout;
     private numCrawlers: number;
@@ -90,81 +115,165 @@ export class MultiProgressBars {
     private bottomBorder: string;
     private endIdx = 0;         // 1 past the last index
     private allFinished = false;
+
+    private headerSettings: Border = {
+        pattern: DEFAULT_BORDER,
+        left: 4,
+    };
+
+    private footerSettings: Border = {
+        pattern: DEFAULT_BORDER,
+    }
+
     public promise: Promise<void>;
 
     /**
      *
-     * @param options   See CtorOptions type
+     * @param options   {@link CtorOptions | See CtorOptions Type}
      */
     public constructor(options?: Partial<CtorOptions>) {
+        // Initialize const options
         const {
             // see https://github.com/kamiyo/multi-progress-bars/issues/7
             stream = process.stdout.isTTY ? process.stdout : process.stderr,
             spinnerFPS = 10,
             spinnerGenerator = this.hilbertSpinner,
-            anchor = 'bottom',
+            anchor = 'top',
             persist = false,
             border = false,
         } = options || {};
+
+        // Initialize options that might be overwritten
         let {
             progressWidth = 40,
             numCrawlers = 4,
             initMessage,
+            header,
+            footer,
         } = options || {};
 
-        this.logger = (anchor === 'top') ?
-            new VirtualConsoleTop({ stream })
-            : new VirtualConsoleBottom({ stream });
+        // New Virtual Console
+        this.logger = new VirtualConsole({ stream, anchor });
 
         this.persist = persist;
-        this.spinnerFPS = Math.min(spinnerFPS, 60);
+        this.spinnerFPS = Math.min(spinnerFPS, 60);    // Just feels right to limit to 60fps
         this.spinnerGenerator = spinnerGenerator;
-        this.border = (typeof border === 'boolean')
-            ? (!border)
-                ? null : '\u2500'
-            : border;
 
-        if (progressWidth % 2 !== 0) {
-            progressWidth += 1;
-        }
-        if (progressWidth % numCrawlers !== 0) {
-            for (let i = numCrawlers - 1; i > 0; i++) {
-                if (progressWidth % i === 0) {
-                    numCrawlers = i;
-                    break;
-                }
-            }
-        }
         this.numCrawlers = numCrawlers;
         this.progressWidth = progressWidth;
+
+        this.processSimpleBorder(initMessage, border, anchor);
+
+        // If constructor was supplied additional header option, process that.
+        // Will override initMessage and border options.
+        if (header !== undefined) {
+            this.setHeader(header);
+        }
+
+        // If constructor was supplied additional footer option, process that.
+        // Will override initMessage and border options.
+        if (footer !== undefined) {
+            this.setFooter(footer);
+        }
+
+        // Setup cleanup callback for SIGINT
+        (process as NodeJS.Process).on('SIGINT', this.cleanup);
+
+        // Make new unresolved promise
+        this.promise = new Promise((res, _) => this.resolve = res);
+    }
+
+    /** Make simple border from supplied option */
+    private processSimpleBorder(initMessage: string, border: boolean | string, anchor: Anchor) {
+
+        // If boolean border option, set either null or DEFAULT_BORDER, otherwise set to supplied border
+        if (typeof border === 'boolean') {
+            if (!border) {
+                this.border = null;
+            } else {
+                this.border = DEFAULT_BORDER;
+            }
+        } else {
+            this.border = border;
+        }
+
         if (initMessage === undefined) {
+            // Create default initMessage if necessary
             initMessage = '$ ' + process.argv.map((arg) => {
                 return path.parse(arg).name;
             }).join(' ');
         } else {
+            // Sorry, header message should only be 1 line
             initMessage = initMessage.split('\n')[0];
         }
+
+        // Make the border if necessary, or just use initMessage
         if (this.border) {
-            initMessage = clampString(initMessage, this.logger.width - 10);
-            const startRepeat = (this.border.length > 4) ? 1 : Math.floor(4 / this.border.length);
-            initMessage = this.border.repeat(startRepeat) + ' ' + initMessage + ' ';
-            const currentCount = stringWidth(initMessage);
-            const remaining = this.logger.width - currentCount;
-            const endRepeat = Math.ceil(remaining / this.border.length);
-            initMessage += this.border.repeat(endRepeat);
-            initMessage = clampString(initMessage, this.logger.width);
+            this.headerSettings = { ...this.headerSettings, pattern: this.border, message: initMessage };
+            initMessage = this.makeBorder(this.headerSettings);
         } else {
             initMessage = clampString(initMessage, this.logger.width);
         }
-        if (this.border && anchor === 'top') {
+
+        if (this.border) {
             this.bottomBorder =
                 clampString(
                     this.border.repeat(
                         Math.ceil(this.logger.width / this.border.length)
-                    ), this.logger.width
+                    ),
+                    this.logger.width
                 );
         }
-        this.init(initMessage);
+
+        // Set top border and optional bottom border
+        initMessage && this.logger.setTopBorder(initMessage);
+        (this.bottomBorder !== undefined) && this.logger.setBottomBorder(this.bottomBorder);
+    }
+
+    /** Make border from message, pattern, left, right. Called internally by setHeader and setFooter
+     *
+     * [message] will be placed within a string surrounded by [pattern] at the specified [left] or [right]
+     * Pass undefined or null to [left] if you want [right] to be used.
+    */
+    private makeBorder(border: Border) {
+        let {
+            message,
+            pattern,
+            left,
+            right,
+        } = border;
+
+        // Build the border with only the pattern first
+        const base = clampString(
+            pattern.repeat(
+                Math.ceil(this.logger.width / stringWidth(pattern))
+            ), this.logger.width
+        );
+
+        if (message === undefined) {
+            return base;
+        }
+
+        // Clamp message - 8, because we don't want a potential superwide message
+        // to take up the entire line.
+        message = clampString(message, this.logger.width - 8);
+
+        // Position from right if supplied
+        if (right !== undefined) {
+            // Some negative indexing for array.slice
+            right = (right <= 0) ? -base.length : Math.floor(right);
+            return clampString(
+                base.slice(0, -right - stringWidth(message)) + message + base.slice(-right),
+                this.logger.width
+            );
+        }
+
+        // Position from left
+        left = Math.max(Math.floor(left), 0);
+        return clampString(
+            base.slice(0, left) + message + base.slice(left + stringWidth(message)),
+            this.logger.width
+        );
     }
 
     public cleanup = () => {
@@ -172,48 +281,92 @@ export class MultiProgressBars {
         if (this.intervalID) {
             clearInterval(this.intervalID);
         }
+        // Resolve the promise.
+        // Should we reject?
+        this.resolve();
+
         // according to node docs, if there's a handler for SIGINT, default behavior
         // (exiting) is removed, so we have to add it back ourselves.
         process.exit();
     }
 
-    private init(message: string) {
+    public setHeader(options: Border | string | boolean) {
+        if (options !== undefined) {
+            if (typeof options === 'boolean') {
+                if (!options) {
+                    this.logger.removeTopBorder();
+                } else {
+                    this.logger.setTopBorder(this.makeBorder(this.headerSettings));
+                }
+            } else if (typeof options === 'string') {
+                this.logger.setTopBorder(clampString(options.split('\n')[0], this.logger.width));
+            } else {
+                this.headerSettings = { ...this.headerSettings, ...options };
 
-        // setup cleanup
-        (process as NodeJS.Process).on('SIGINT', this.cleanup);
+                this.logger.setTopBorder(this.makeBorder(this.headerSettings));
+            }
+        }
+    }
 
-        message && this.logger.setTopBorder(message);
-        (this.bottomBorder !== undefined) && this.logger.setBottomBorder(this.bottomBorder);
+    public setFooter(options: Border | string | boolean) {
+        if (options !== undefined) {
+            if (typeof options === 'boolean') {
+                if (!options) {
+                    this.logger.removeBottomBorder();
+                } else {
+                    this.logger.setBottomBorder(this.makeBorder(this.footerSettings))
+                }
+            } else if (typeof options === 'string') {
+                this.logger.setBottomBorder(clampString(options.split('\n')[0], this.logger.width));
+            } else {
+                this.footerSettings = { ...this.footerSettings, ...options };
 
-        this.promise = new Promise((res, _) => this.resolve = res);
+                this.logger.setBottomBorder(this.makeBorder(this.footerSettings));
+            }
+        }
+    }
+
+    public removeHeader() {
+        this.setHeader(false);
+    }
+
+    public removeFooter() {
+        this.setFooter(false);
     }
 
     public addTask(name: string, {
         index,
         ...options
     }: AddOptions) {
+        // Restart promise
         this.restartPromiseIfNeeded();
-        // if task exists, update fields
+        // Make sure there are no control characters
+        name = stripAnsi(name);
+
         if (this.tasks[name] !== undefined) {
+            // if task exists, update fields
+            // remove undefined kv's
             Object.keys(options).forEach((key: keyof Partial<Omit<Task, 'index' | 'name' | 'done'>>) =>
                 options[key] === undefined && delete options[key]
             );
+            // update all other kv's
             this.tasks[name] = {
                 ...this.tasks[name],
                 ...options,
                 percentage: 0,
-                name,
                 done: false,
             };
         } else {
             // otherwise make a new task
             const {
                 type,
-                barColorFn = defaultTransformFn,
+                barTransformFn = defaultTransformFn,
+                nameTransformFn = defaultTransformFn,
                 percentage = 0,
                 message = '',
             } = options;
 
+            // Auto-increment index if needed
             if (index === undefined) {
                 index = this.endIdx;
                 this.endIdx++;
@@ -221,9 +374,11 @@ export class MultiProgressBars {
                 this.endIdx = index + 1;
             }
 
+            // Make the new task
             this.tasks[name] = {
                 type,
-                barColorFn,
+                barTransformFn,
+                nameTransformFn,
                 percentage,
                 message,
                 name,
@@ -232,21 +387,21 @@ export class MultiProgressBars {
             };
         }
 
-        // If the added task is an indefinite task, and the animation update has previous stopped,
+        // Calculated longest name to pad other names to.
+        this.longestNameLength = Math.max(this.longestNameLength, stringWidth(name));
+
+        // If the added task is an indefinite task, and the animation update has previously stopped,
         // Restart it.
         if (options.type === 'indefinite' && !this.intervalID) {
             this.t = 0;
             this.intervalID = setInterval(() => this.renderIndefinite(), 1000 / this.spinnerFPS);
-        } else if (options.type === 'percentage') {
-            this.writeTask(this.tasks[name]);
         }
-
-        // Calculated longest name to pad other names to.
-        this.longestNameLength = Math.max(this.longestNameLength, stringWidth(name));
 
         // Rerender other tasks so that task names are padded correctly.
         Object.values(this.tasks).forEach((task) => {
-            this.writeTask(task);
+            if (task.type === 'percentage') {
+                this.writeTask(task);
+            }
         });
 
         this.logger.refresh();
@@ -255,6 +410,7 @@ export class MultiProgressBars {
     // Call this BEFORE you add a new task to the list
     private restartPromiseIfNeeded() {
         // check if allFinished previously
+        // Reset allFinished and make new promise if we need to restart.
         if (this.allFinished) {
             this.allFinished = false;
             this.promise = new Promise((res) => this.resolve = res);
@@ -262,54 +418,79 @@ export class MultiProgressBars {
     }
 
     public isDone(name: string) {
-        return this.tasks[name].done;
+        return this.tasks[stripAnsi(name)].done;
     }
 
-    // public removeTask(name: string) {
-    //     const idxToRemove = this.tasks[name].index;
-    //     delete this.tasks[name];
-    //     this.longestNameLength = Object.entries(this.tasks).reduce((prev, [taskName, { index }]) => {
-    //         // What?! Side-effects in reduce?!
-    //         // Don't worry, we're not functional purists here.
-    //         // Decrement all indexes after the one to remove.
-    //         if (index > idxToRemove) {
-    //             this.tasks[taskName].index--;
-    //         }
+    public removeTask(task: string | number, shift = true) {
+        // Do nothing if task doesn't exist
+        if ((typeof task === 'string' && this.tasks[stripAnsi(task)] === undefined) ||
+            (typeof task === 'number' && this.getName(task) === undefined)) {
+            return;
+        }
 
-    //         return Math.max(prev, stringWidth(taskName));
-    //     }, 0);
+        const idxToRemove = (typeof task === 'string') ? this.tasks[stripAnsi(task)].index : task;
 
-    //     // Rerender previously finished tasks so that the task names are padded correctly.
-    //     // Do this by calling done() again.
-    //     Object.entries(this.tasks).forEach(([name, { done, message }]) => {
-    //         if (done) {
-    //             this.done(name, { message });
-    //         }
-    //     });
-    // }
+        // Write empty line to the given index
+        this.logger.upsertProgress({
+            index: idxToRemove,
+            data: '',
+        });
+
+        // Adjust buffers in virtual console
+        if (shift) {
+            this.logger.removeProgressSlot();
+            this.endIdx--;
+        }
+
+        // Remove from list of tasks
+        (typeof task === 'string') ? delete this.tasks[stripAnsi(task)] : delete this.tasks[this.getName(task)];
+
+        // Shift up tasks if needed, and also recalculate max task name length for realignment
+        this.longestNameLength = Object.entries(this.tasks).reduce((prev, [taskName, { index }]) => {
+            // What?! Side-effects in reduce?!
+            // Don't worry, we're not functional purists here.
+            // Decrement all indexes after the one to remove.
+            if (shift && index > idxToRemove) {
+                this.tasks[taskName].index--;
+            }
+
+            return Math.max(prev, stringWidth(taskName));
+        }, 0);
+
+        // Rerender other tasks so that task names are padded correctly.
+        Object.values(this.tasks).forEach((t) => {
+            this.writeTask(t);
+        });
+
+        this.logger.refresh();
+    }
 
     private progressString(task: Task) {
         const {
             name,
-            barColorFn,
+            barTransformFn,
+            nameTransformFn,
             message,
             percentage,
         } = task;
 
         // scale progress bar to percentage of total width
         const scaled = percentage * this.progressWidth;
+
         // scaledInt gives you the number of full blocks
         const scaledInt = Math.floor(scaled);
+
         // scaledFrac gives you the fraction of a full block
-        const scaledFrac = Math.floor(this.CHARS.length * (scaled % 1));
-        const fullChar = this.FULL_CHAR;
+        const scaledFrac = Math.floor(CHARS.length * (scaled % 1));
+        const fullChar = FULL_CHAR;
         const fracChar = (scaledFrac > 0)
-            ? this.FRAC_CHARS[scaledFrac - 1]
+            ? FRAC_CHARS[scaledFrac - 1]
             : ((scaledInt === this.progressWidth)
                 ? ''
                 : ' ');
+
         // combine full blocks with partial block
-        const bar = barColorFn(fullChar.repeat(scaledInt) + fracChar);
+        const bar = barTransformFn(fullChar.repeat(scaledInt) + fracChar);
         // fill the rest of the space until progressWidth
         const rest = (scaledInt < this.progressWidth - 1)
             ? ' '.repeat(this.progressWidth - (scaledInt + 1))
@@ -317,23 +498,25 @@ export class MultiProgressBars {
         // TODO: make this formattable
         // Currently, returns the name of the task, padded to the length of the longest name,
         // the bar, space padding, percentage padded to 3 characters, and the custom message.
-        return name.padStart(this.longestNameLength)
-            + ': '
-            + bar
-            + rest
-            + ' '
-            + (percentage * 100).toFixed(0).padStart(3)
-            + '% | '
-            + message;
+        const percentString = (percentage * 100).toFixed(0).padStart(3);
+
+        // Compensate for the existence of escape characters in padStart.
+        const stringLengthDifference = name.length - stringWidth(name);
+        const paddedTaskName = nameTransformFn(name.padStart(this.longestNameLength + stringLengthDifference));
+
+        return `${paddedTaskName}: ${bar}${rest} ${percentString}% | ${message}`;
     }
 
     private indefiniteString(task: Task, spinner: string) {
         const {
             name,
-            barColorFn,
+            barTransformFn,
+            nameTransformFn,
             message,
         } = task;
-        return name.padStart(this.longestNameLength) + ': ' + barColorFn(spinner) + ' ' + message;
+        const stringLengthDifference = name.length - stringWidth(name);
+        const paddedTaskName = nameTransformFn(name.padStart(this.longestNameLength + stringLengthDifference));
+        return `${paddedTaskName}: ${barTransformFn(spinner)} ${message}`;
     }
 
     private writeTask(task: Task) {
@@ -350,7 +533,11 @@ export class MultiProgressBars {
             ...options
         }: UpdateOptions = {}
     ) {
-        if (this.tasks[name] === undefined) throw new ReferenceError('Task does not exist.')
+        name = stripAnsi(name);
+        if (this.tasks[name] === undefined) {
+            this.logger.error('Error calling incrementTask(): Task does not exist');
+            return;
+        }
         if (this.tasks[name].done) {
             return;
         }
@@ -365,8 +552,10 @@ export class MultiProgressBars {
     }
 
     public updateTask(name: string, options: UpdateOptions = {}) {
+        name = stripAnsi(name);
         if (this.tasks[name] === undefined) {
-            throw new ReferenceError('Task does not exist.');
+            this.logger.error('Error calling updateTask(): Task does not exist');
+            return;
         }
         this.restartPromiseIfNeeded();
         const task = this.tasks[name];
@@ -394,8 +583,13 @@ export class MultiProgressBars {
         this.logger.refresh();
     }
 
-    public done(name: string, { message = chalk.green('Finished'), ...options }: Pick<UpdateOptions, 'message' | 'barColorFn'> = {}) {
-        if (this.tasks[name] === undefined) throw new ReferenceError('Task does not exist.')
+    public done(name: string, { message = chalk.green('Finished'), ...options }: Pick<UpdateOptions, 'message' | 'barTransformFn' | 'nameTransformFn'> = {}) {
+        name = stripAnsi(name);
+        if (this.tasks[name] === undefined) {
+            this.logger.error('Error calling done(): Task does not exist');
+            return;
+        }
+
         this.tasks[name] = {
             ...this.tasks[name],
             done: true,
@@ -423,22 +617,25 @@ export class MultiProgressBars {
         }
     }
 
-    public restart(name: string, options: Pick<UpdateOptions, 'message' | 'barColorFn'>) {
+    public restartTask(name: string, { percentage = 0, ...options }: Pick<UpdateOptions, 'percentage' | 'message' | 'barTransformFn' | 'nameTransformFn'>) {
+        name = stripAnsi(name);
         this.restartPromiseIfNeeded();
+
         if (this.tasks[name] === undefined) {
-            throw new ReferenceError('Task does not exist.');
+            this.logger.error('Error calling restart(): Task does not exist');
+            return;
         }
+
         this.tasks[name] = {
             ...this.tasks[name],
             ...options,
-            percentage: 0,
+            percentage,
             done: false,
         };
 
         if (this.tasks[name].type === 'indefinite' && !this.intervalID) {
             this.t = 0;
             this.intervalID = setInterval(() => this.renderIndefinite(), 1000 / this.spinnerFPS);
-
         } else if (this.tasks[name].type === 'percentage') {
             this.tasks[name].percentage = 0;
             this.writeTask(this.tasks[name]);
@@ -448,12 +645,18 @@ export class MultiProgressBars {
     }
 
     public close() {
-        this.logger?.done();
+        if (this.intervalID !== null) {
+            clearInterval(this.intervalID);
+            this.intervalID = null;
+        }
+        this.allFinished = true;
+        this.resolve();
+        this.logger.done();
     }
 
     // Returns the index of task with supplied name. Returns undefined if name not found.
     public getIndex(taskName: string) {
-        return this.tasks[taskName]?.index;
+        return this.tasks[stripAnsi(taskName)]?.index;
     }
 
     // Returns the name of the task with given index. Returns undefined if name not found.
@@ -464,25 +667,29 @@ export class MultiProgressBars {
     // TODO maybe make this static?
     private hilbertSpinner(t: number, width: number) {
         // Each cell takes 8 steps to go through (plus 3 for trailing).
-        const cycle = 8 * width / this.numCrawlers;
+        const cycle = 8 * Math.floor(width / this.numCrawlers);
 
         t = t % cycle;
 
         const spinner = Array(width).fill(' ').map((_, idx) => {
-            const adjId = -8 * (idx % (width / this.numCrawlers)) + t;
+            const adjId = -8 * (idx % Math.floor(width / this.numCrawlers)) + t;
             const leftOver = -cycle + 8
             if (idx % 2 === 0) {
                 if (adjId >= leftOver && adjId < leftOver + 3) {
-                    return this.SPACE_FILLING_1[cycle + adjId];
+                    return SPACE_FILLING_1[cycle + adjId];
                 }
-                if (adjId < 0 || adjId >= this.SPACE_FILLING_1.length) return ' ';
-                return this.SPACE_FILLING_1[adjId];
+                if (adjId < 0 || adjId >= SPACE_FILLING_1.length) {
+                    return ' ';
+                }
+                return SPACE_FILLING_1[adjId];
             } else {
                 if (adjId >= leftOver && adjId < leftOver + 3) {
-                    return this.SPACE_FILLING_2[cycle + adjId];
+                    return SPACE_FILLING_2[cycle + adjId];
                 }
-                if (adjId < 0 || adjId >= this.SPACE_FILLING_2.length) return ' ';
-                return this.SPACE_FILLING_2[adjId];
+                if (adjId < 0 || adjId >= SPACE_FILLING_2.length) {
+                    return ' ';
+                }
+                return SPACE_FILLING_2[adjId];
             }
         });
 
