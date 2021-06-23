@@ -95,7 +95,7 @@ Included in this library is a (imo) cool Hilbert Curve / Space-Filling Curve spi
 
 ## License
 
-[MIT](License)
+[MIT](LICENSE)
 
 ## Like this utility? Support my hobby!
 
