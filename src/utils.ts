@@ -1,5 +1,4 @@
 import { default as stringWidth } from 'string-width';
-import { format } from 'util';
 
 const ESC = '\x1B';
 const CSI = ESC + '[';
@@ -16,41 +15,38 @@ const numberTo0StringHelper = (number: number) =>
  * @param row (required) 0-index absolute row
  * @param column (optional) 0-index absolute column
  */
-export const CUP = (row: number, column?: number) => CSI
-    + numberTo1StringHelper(row)
-    + ';'
-    + numberTo1StringHelper(column)
-    + 'H';
+export const CUP = (row: number, column?: number) =>
+    `${CSI}${numberTo1StringHelper(row)};${numberTo1StringHelper(column)}H`;
 
 /** Cursor Horizonal Absolute
  *
  * @param column (optional) 0-index absolute column
  */
-export const CHA = (column: number) => CSI + numberTo1StringHelper(column) + 'G';
+export const CHA = (column: number) => `${CSI}${numberTo1StringHelper(column)}G`;
 
 /** CUrsor Up
  *
  * @param number (optional) 0-index rows to move up
  */
-export const CUU = (number: number) => CSI + numberTo0StringHelper(number) + 'A';
+export const CUU = (number: number) => `${CSI}${numberTo0StringHelper(number)}A`;
 
 /** CUrsor Down
  *
  * @param number (optional) 0-index rows to move down
  */
-export const CUD = (number: number) => CSI + numberTo0StringHelper(number) + 'B';
+export const CUD = (number: number) => `${CSI}${numberTo0StringHelper(number)}B`;
 
 /** CUrsor Forward
  *
  * @param number (optional) 0-index rows to move right
  */
-export const CUF = (number: number) => CSI + numberTo0StringHelper(number) + 'C';
+export const CUF = (number: number) => `${CSI}${numberTo0StringHelper(number)}C`;
 
 /** CUrsor Back
 *
 * @param number (optional) 0-index rows to move left
 */
-export const CUB = (number: number) => CSI + numberTo0StringHelper(number) + 'D';
+export const CUB = (number: number) => `${CSI}${numberTo0StringHelper(number)}D`;
 
 /**
  *
@@ -80,8 +76,12 @@ export enum EL_MODE {
     ENTIRE_LINE = 2
 };
 
+/** Erase Line
+ *
+ * @param mode  EL_MODE.TO_END, .TO_BEGINNING, or .ENTIRE_LINE
+ */
 export const EL = (mode: EL_MODE = EL_MODE.TO_END) => {
-    return CSI + mode.toString() + 'K';
+    return `${CSI}${mode.toString()}K`;
 };
 
 export enum ED_MODE {
@@ -91,11 +91,14 @@ export enum ED_MODE {
     ENTIRE_SCREEN_DELETE_SCROLLBACK = 3,
 };
 
+/** Erase Display
+ *
+ * @param mode  ED_MORE.TO_END, .TO_BEGINNING, ENTIRE_SCREEN, or .ENTIRE_SCREEN_DELETE_SCROLLBACK
+ */
 export const ED = (mode: ED_MODE = ED_MODE.TO_END) => {
-    return CSI + mode.toString() + 'J';
+    return `${CSI}${mode.toString()}J`;
 };
 
-// Always puts a reset ANSI escape code, just in case it was stripped.
 // Anyways, probably don't want any styling codes to linger past one line.
 export const clampString = (message: string, width: number) => {
     while (stringWidth(message) > width) {
@@ -103,7 +106,7 @@ export const clampString = (message: string, width: number) => {
         // so do it this way, checking each time.
         message = message.slice(0, message.length - 1);
     }
-    return message + RESET;
+    return message;
 };
 
 // Split by newlines, and then split the resulting lines if they run longer than width.

@@ -1,10 +1,12 @@
 {
     "compilerOptions": {
-        "module": "CommonJS",
-        "target": "ES6",
+        "module": "commonjs",
+        "target": "es6",
         "noImplicitAny": true,
         "moduleResolution": "node",
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
         "rootDir": "../"
     },
-    "include": ["exampleTop.ts", "exampleBottom.ts"],
+    "include": ["example.ts"]
 }
