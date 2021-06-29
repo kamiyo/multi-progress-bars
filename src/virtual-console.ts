@@ -52,7 +52,9 @@ export class VirtualConsole {
         this.width = this.stream.columns;
         this.height = this.stream.rows;
 
-        this.stream.on('resize', this.resize);
+        this.stream.on('resize', () => {
+            this.resize();
+        });
 
         this.progressHeight = 0;
         this.progressBuffer = [];
