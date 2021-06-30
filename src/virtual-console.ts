@@ -53,7 +53,6 @@ export class VirtualConsole {
         this.height = this.stream.rows;
 
         this.stream.on('resize', () => {
-            console.log('resize!');
             this.resize();
         });
 
@@ -124,7 +123,7 @@ export class VirtualConsole {
 
         // If progress buffer is larger than screen height - borders, then truncate top
         const bufferStartIndex = Math.max(this.progressBuffer.length - this.currentHeightMinusBorders(), 0);
-        this.stream?.write(CUP(0) + this.height + ' ' + this.progressHeight + ' ' + this.consoleHeight + ' ' + this.getOutString(bufferStartIndex, topLines));
+        this.stream?.write(CUP(0) + this.getOutString(bufferStartIndex, topLines));
     }
 
     getOutStringTop(bufferStartIndex: number, topLines: string[]) {
