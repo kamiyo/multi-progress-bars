@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.0.1](https://github.com/kamiyo/multi-progress-bars/compare/v4.0.0...v4.0.1) (2021-06-30)
+
+
+### Bug Fixes
+
+* **core:** resizing logic ([2b09ba5](https://github.com/kamiyo/multi-progress-bars/commit/2b09ba561e705a00c38542a87c04323628541c88))
+* **core:** update typescript and yarn version ([9fc6147](https://github.com/kamiyo/multi-progress-bars/commit/9fc6147596f78776e2fff71cbfe44be6736579a0))
+* **core:** upgrade yarn stuff ([79829cf](https://github.com/kamiyo/multi-progress-bars/commit/79829cf8bc0daee5bed1e12450d1af13880066ff))
+
 ## [4.0.0](https://github.com/kamiyo/multi-progress-bars/compare/v4.0.0-alpha.0...v4.0.0) (2021-06-23)
 
 ### Bug Fixes
