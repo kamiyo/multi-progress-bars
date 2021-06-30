@@ -6,4 +6,4 @@
 .pnp.*
 node_modules
 dist
-example/example.js
+examples/example.js
