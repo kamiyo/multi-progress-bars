@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.2.0](https://github.com/kamiyo/multi-progress-bars/compare/v4.1.0...v4.2.0) (2021-11-09)
+
+
+### Features
+
+* **docs:** Added missing header/footer API methods. ([9f8f3e2](https://github.com/kamiyo/multi-progress-bars/commit/9f8f3e215ee1af0ee484db135aba459a84bb8c66))
+
 ## [4.1.0](https://github.com/kamiyo/multi-progress-bars/compare/v4.0.1...v4.1.0) (2021-11-09)
 
 
