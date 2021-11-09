@@ -2,13 +2,11 @@
   "name": "multi-progress-bars",
   "version": "4.0.1",
   "description": "Multiple progress bars with option for indefinite spinners",
-  "main": "dist/multi-progress-bars.cjs.js",
-  "module": "dist/multi-progress-bars.es.js",
+  "main": "dist/multi-progress-bars.cjs",
+  "module": "dist/multi-progress-bars.mjs",
   "exports": {
-    ".": {
-      "require": "./dist/multi-progress-bars.cjs.js",
-      "default": "./dist/multi-progress-bars.es.js"
-    }
+    "require": "./dist/multi-progress-bars.cjs",
+    "default": "./dist/multi-progress-bars.mjs"
   },
   "type": "commonjs",
   "types": "dist/index.d.ts",
