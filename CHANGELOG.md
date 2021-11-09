@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.1.0](https://github.com/kamiyo/multi-progress-bars/compare/v4.0.1...v4.1.0) (2021-11-09)
+
+
+### Features
+
+* **dev:** Update yarn to v2.4.2 ([f723ace](https://github.com/kamiyo/multi-progress-bars/commit/f723ace00659de995acc150fb57689cda2f0a223))
+
+
+### Bug Fixes
+
+* **core:** removeBottomBorder had outdated progressHeight calculations ([6b1332f](https://github.com/kamiyo/multi-progress-bars/commit/6b1332fd3c2213ef325498ca7321dcc23de53148))
+* **package:** Change esm extension to mjs for automatic module detection ([6107343](https://github.com/kamiyo/multi-progress-bars/commit/61073430682c3f0622b830a4694242f0f11c19c0))
+
 ### [4.0.1](https://github.com/kamiyo/multi-progress-bars/compare/v4.0.0...v4.0.1) (2021-06-30)
 
 
