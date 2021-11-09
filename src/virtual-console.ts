@@ -239,8 +239,12 @@ export class VirtualConsole {
     removeBottomBorder() {
         if (this.bottomBorder !== undefined) {
             this.bottomBorder = undefined;
-            this.progressHeight -= 1;
-            this.consoleHeight += 1;
+            this.progressHeight =
+                Math.min(
+                    Math.max(this.progressHeight - 1, this.progressBuffer.length),
+                    this.height
+                );
+            this.consoleHeight = this.height - this.progressHeight;
         }
     }
 
