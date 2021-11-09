@@ -27,10 +27,10 @@ Note: `percentage` is represented as the decimal form, i.e. 0.23 = 23%
 |footer|`Border \| string \| boolean`|N|`undefined`|Set the footer. Pass a `Border` object, or a string, which will be displayed as input, or `true` for default `U+2500` border.|
 |persist|`boolean`|N|`false`|When `true`, `mpb` will continue to intercept console functions even when all the tasks are completed; you must call `mpb.close()` to get back the original console (or else you might get wonky prompt placement afterwards). If `false`, once all tasks have completed, `mpb` will automatically restore the original console. However, if you restart a task, it will re-intercept. Use `true` if doing something like a webpack watch.|
 
-`Border` object:
+<span name="border">`Border` object:</span>
 | Key | Type | Required | Default | Comments |
 |---|---|---|---|---|
-|message|`string`|N|`undefined`||
+|message|`string`|N|`undefined`|The message to print at the position specified below.|
 |pattern|`string`|N|`\u2500`|The supplied string will be repeated until the line is filled.|
 |left|`number`|N|`4`|The position from the left on the border to put the message.|
 |right|`number`|N|`undefined`|The position from the right on the border to put the message. Preempts `left` if present.|
@@ -162,6 +162,34 @@ Note: `percentage` is represented as the decimal form, i.e. 0.23 = 23%
 <br>
 
 >Stop all spinners, resolve the outstanding promise, and detach `console.log` interception. This will restore the original console to `console`, and move the cursor to expected position for the next console prompt. If you restart any task after mpb has closed, it will automatically re-intercept `console` again.
+
+<br>
+
+---
+<br>
+<br>
+
+## `mpb.setHeader(options: Border | string | boolean): void`
+## `mpb.setFooter(options: Border | string | boolean): void`
+<br>
+
+[Border object spec](#border)
+
+>Allows you to set the header and footer. You can supply an options object, a string, or a boolean as arguments. If you supply a `string`, it will put that string as the border, repeating for the terminal width. If you supply `true`, it will render the default border. If you supply `false`, it removes the border (equivalently, you can call `removeHeader`/`removeFooter`). If you supply the `Border` object, it will set any options, and render the header/footer. If options were set previously, they are retained until overwritten. This includes the default setting `pattern: '\u2500'` for both header and footer, and `left: 4` for header. Thus, you can repeatedly call `setFooter({ message: 'Total Progress n/N' })` to have a pinned status bar.
+
+<br>
+
+---
+<br>
+<br>
+
+## `mpb.removeHeader(): void`
+## `mpb.removeFooter(): void`
+<br>
+
+>Remove the header or the footer. To keep the header or footer space but not render anything, call `setHeader(' ')`/`setFooter(' ')`.
+
+<br>
 
 ---
 <br>

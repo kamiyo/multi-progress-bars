@@ -61,9 +61,12 @@ If you want to remove a task, call removeTask():
 mpb.removeTask(Task2);
 ```
 ---
-## Borders
+## Borders/Header/Footer
 
-You can set/modify borders with setHeader() and setFooter(), and even specify messages and placement. See [api](docs/API.md#borders) for full options. Pattern will repeat:
+You can set/modify borders with setHeader() and setFooter(), and even specify messages and placement. See [API](./API.md#borders) for full options. Pattern will repeat for the width of the terminal. Each call to set options overwrites only the ones given; current options persist until overwritten.
+
+Examples:
+
 ```node
 mpb.setHeader({
     pattern: '.*',
@@ -72,7 +75,8 @@ mpb.setHeader({
 });
 mpb.setFooter('-');
 ```
-Remove with `removeHeader()` and `removeFooter()`.
+
+Remove with `removeHeader()` and `removeFooter()` or passing `false` to the `set` methods.
 
 ---
 ## Utilities
