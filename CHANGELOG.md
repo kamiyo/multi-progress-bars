@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.2.2-0](https://github.com/kamiyo/multi-progress-bars/compare/v4.2.1...v4.2.2-0) (2022-01-09)
+
+
+### Bug Fixes
+
+* **core:** Maybe fix ESM? ([cfab46e](https://github.com/kamiyo/multi-progress-bars/commit/cfab46e2033da2c64fa25b9c2c47c9336ea61f00))
+
 ### [4.2.1](https://github.com/kamiyo/multi-progress-bars/compare/v4.2.0...v4.2.1) (2022-01-09)
 
 
