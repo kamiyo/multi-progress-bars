@@ -256,9 +256,9 @@ export class MultiProgressBars {
             return base;
         }
 
-        // Clamp message - 8, because we don't want a potential superwide message
-        // to take up the entire line.
-        message = clampString(message, this.logger.width - 8);
+        // Clamp message to logger width - 8, because we don't want a potential superwide message
+        // to take up the entire line. Also, remove tabs and newlines, taking the first.
+        message = clampString(message.split(/[\t\n]/g)[0], this.logger.width - 8);
 
         // Position from right if supplied
         if (right !== undefined) {
