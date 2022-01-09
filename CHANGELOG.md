@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.2.1](https://github.com/kamiyo/multi-progress-bars/compare/v4.2.0...v4.2.1) (2022-01-09)
+
+
+### Bug Fixes
+
+* **core:** Fix empty string crashing border ([871633b](https://github.com/kamiyo/multi-progress-bars/commit/871633b265d6efddec0e8428a8f4fc78a36a5d34))
+* **core:** Fix newlines and tabs breaking border message. Now splits at those characters and only displays the first item of the returned array. ([1e09301](https://github.com/kamiyo/multi-progress-bars/commit/1e093013483194654731d11c961b69a9f74f73f7))
+
 ## [4.2.0](https://github.com/kamiyo/multi-progress-bars/compare/v4.1.0...v4.2.0) (2021-11-09)
 
 
