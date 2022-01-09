@@ -244,11 +244,13 @@ export class MultiProgressBars {
         } = border;
 
         // Build the border with only the pattern first
-        const base = clampString(
-            pattern.repeat(
-                Math.ceil(this.logger.width / stringWidth(pattern))
-            ), this.logger.width
-        );
+        const base = pattern
+            ? clampString(
+                pattern.repeat(
+                    Math.ceil(this.logger.width / stringWidth(pattern))
+                ), this.logger.width
+            )
+            : ' '.repeat(this.logger.width);
 
         if (message === undefined) {
             return base;

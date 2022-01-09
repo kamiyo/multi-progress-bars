@@ -166,10 +166,10 @@ const testBorders = async (anchor: Anchor) => {
             console.log("console log:\n%d", count);
             if (count % 2 === 1) {
                 mpb.setHeader({ pattern: ' ' });
-                mpb.setFooter({ pattern: ' ' });
+                mpb.setFooter({ pattern: '' });
             } else {
                 mpb.setHeader({ pattern: '*' });
-                mpb.setFooter({ pattern: '.' });
+                mpb.setFooter(' *** Bottom Border *** ');
             }
         }
     }, 200);
