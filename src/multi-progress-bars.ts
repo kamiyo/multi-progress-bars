@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { WriteStream } from 'tty';
 import * as path from 'path';
 import stringWidth from 'string-width';
@@ -7,6 +7,8 @@ import { VirtualConsole } from './virtual-console';
 import { clampString } from './utils';
 
 export type TaskType = 'percentage' | 'indefinite';
+
+const { green } = chalk;
 
 type TransformFn = (bar: string) => string;
 type Anchor = 'top' | 'bottom';
@@ -585,7 +587,7 @@ export class MultiProgressBars {
         this.logger.refresh();
     }
 
-    public done(name: string, { message = chalk.green('Finished'), ...options }: Pick<UpdateOptions, 'message' | 'barTransformFn' | 'nameTransformFn'> = {}) {
+    public done(name: string, { message = green('Finished'), ...options }: Pick<UpdateOptions, 'message' | 'barTransformFn' | 'nameTransformFn'> = {}) {
         name = stripAnsi(name);
         if (this.tasks[name] === undefined) {
             this.logger.error('Error calling done(): Task does not exist');

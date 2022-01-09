@@ -1234,10 +1234,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:>13.0.0":
-  version: 15.12.4
-  resolution: "@types/node@npm:15.12.4"
-  checksum: 64b121a7e805379382aeb3eefed56c4c34f1ebf5e818ba2c732e43beebc4fbde20be438f3eaaffd8dba5062f0e0c9ae085127b7239906d170eda816885a6c508
+"@types/node@npm:^13.13.52":
+  version: 13.13.52
+  resolution: "@types/node@npm:13.13.52"
+  checksum: 702db7930d333cc56e38d1ffb0ac394c2ccaae3be41ad6d92d84e5225f2ccf7a69fc19bd9eceafd0c00189876add6464460c5fd47ce4bdc14f6f9b0a7212aee0
   languageName: node
   linkType: hard
 
@@ -1662,13 +1662,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^4.1.1":
-  version: 4.1.1
-  resolution: "chalk@npm:4.1.1"
+"chalk@npm:^4.1.2":
+  version: 4.1.2
+  resolution: "chalk@npm:4.1.2"
   dependencies:
     ansi-styles: ^4.1.0
     supports-color: ^7.1.0
-  checksum: 445c12db7aeed0046500a1e4184d31209a77d165654c885a789c41c8598a6a95bd2392180987cac572c967b93a2a730dda778bb7f87fa06ca63fd8592f8cc59f
+  checksum: e3901b97d953991712bf0b941d586175be7ca5da56a97d25187e07453c6b26cae0ac8d9c7aa9e87e7c5c986fff870771b3a8e2705b3becda868829e2e12c2a65
   languageName: node
   linkType: hard
 
@@ -3331,9 +3331,9 @@ fsevents@~2.3.1:
   version: 0.0.0-use.local
   resolution: "multi-progress-bars@workspace:."
   dependencies:
-    "@types/node": ">13.0.0"
+    "@types/node": ^13.13.52
     "@wessberg/rollup-plugin-ts": ^1.3.8
-    chalk: ^4.1.1
+    chalk: ^4.1.2
     rollup: ^2.40.0
     rollup-plugin-typescript2: ^0.30.0
     standard-version: ^9.1.1
