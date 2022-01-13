@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.2.3](https://github.com/kamiyo/multi-progress-bars/compare/v4.2.2...v4.2.3) (2022-01-13)
+
+
+### Bug Fixes
+
+* **core:** add carriage return to line split matching ([9c23705](https://github.com/kamiyo/multi-progress-bars/commit/9c237055e58786389340ac1a12da90c0bdb9a3c7))
+
 ### [4.2.2](https://github.com/kamiyo/multi-progress-bars/compare/v4.2.2-0...v4.2.2) (2022-01-13)
 
 ### [4.2.2-0](https://github.com/kamiyo/multi-progress-bars/compare/v4.2.1...v4.2.2-0) (2022-01-09)
