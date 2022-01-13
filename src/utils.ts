@@ -111,7 +111,7 @@ export const clampString = (message: string, width: number) => {
 
 // Split by newlines, and then split the resulting lines if they run longer than width.
 export const splitLinesAndClamp = (writeString: string, maxWidth: number) => {
-    return writeString.split('\n').reduce<string[]>((prev, curr) => {
+    return writeString.split(/\r?\n/g).reduce<string[]>((prev, curr) => {
         const clamped = [];
         do {
             let width = curr.length;

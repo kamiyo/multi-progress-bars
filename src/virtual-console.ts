@@ -174,7 +174,7 @@ export class VirtualConsole {
     log(...data: any[]) {
         // Format incoming strings and split into lines and clamp.
         if (data.length !== 0) {
-            const writeString: string = format.apply(null, data);
+            const writeString = format(...data);
             const clampedLines = splitLinesAndClamp(writeString, this.width);
 
             this.consoleBuffer.push(...clampedLines);
