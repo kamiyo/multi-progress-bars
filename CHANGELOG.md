@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+### [4.3.1](https://github.com/kamiyo/multi-progress-bars/compare/v4.3.0...v4.3.1) (2022-07-12)
+
+
+### Bug Fixes
+
+* **deps:** deduped deps ([5b86445](https://github.com/kamiyo/multi-progress-bars/commit/5b86445713a1f2cb6dd7d2c75d7416684ea26d38))
+
 ## [4.3.0](https://github.com/kamiyo/multi-progress-bars/compare/v4.2.3...v4.3.0) (2022-07-12)
 
 
