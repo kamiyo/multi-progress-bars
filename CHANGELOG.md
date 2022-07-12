@@ -1,6 +1,13 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
+
+## [4.3.0](https://github.com/kamiyo/multi-progress-bars/compare/v4.2.3...v4.3.0) (2022-07-12)
+
+
+### Bug Fixes
+
+* **deps:** updated dependencies and nested dependencies for security ([6643a81](https://github.com/kamiyo/multi-progress-bars/commit/6643a811dd2cc2eed9b33120b922189f5f91efd0))
 
 ### [4.2.3](https://github.com/kamiyo/multi-progress-bars/compare/v4.2.2...v4.2.3) (2022-01-13)
 
