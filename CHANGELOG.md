@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+### [5.0.1](https://github.com/kamiyo/multi-progress-bars/compare/v5.0.0...v5.0.1) (2022-12-22)
+
+
+### Bug Fixes
+
+* **readme:** Updated README with breaking change notification. ([487a7c9](https://github.com/kamiyo/multi-progress-bars/commit/487a7c908e2bbe87c15d2a77c042bc573062e927))
+
 ## [5.0.0](https://github.com/kamiyo/multi-progress-bars/compare/v4.3.4...v5.0.0) (2022-12-22)
 
 

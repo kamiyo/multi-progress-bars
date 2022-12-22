@@ -1,6 +1,6 @@
 {
   "name": "multi-progress-bars",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "Multiple progress bars with option for indefinite spinners",
   "main": "dist/multi-progress-bars.cjs",
   "module": "dist/multi-progress-bars.mjs",
