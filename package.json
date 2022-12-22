@@ -45,12 +45,12 @@
   },
   "devDependencies": {
     "@types/node": "^13.13.52",
-    "commit-and-tag-version": "^10.0.1",
-    "rollup": "^2.76.0",
+    "commit-and-tag-version": "^10.1.0",
+    "rollup": "^2.79.1",
     "rollup-plugin-ts": "^3.0.2",
     "trash-cli": "^5.0.0",
-    "tslib": "^2.4.0",
-    "typescript": "^4.7.4"
+    "tslib": "^2.4.1",
+    "typescript": "^4.9.4"
   },
   "dependencies": {
     "chalk": "^4.1.2",
@@ -58,8 +58,10 @@
     "strip-ansi": "6.0.1"
   },
   "resolutions": {
-    "browserslist-generator/browserslist": "^4.20.2",
-    "meow@npm:3.7.0/trim-newlines": "^3.0.1"
+    "browserslist-generator": "^1.0.66",
+    "meow@npm:3.7.0/trim-newlines": "^3.0.1",
+    "qs": "6.5.3",
+    "minimatch": "3.1.2"
   },
   "packageManager": "yarn@3.2.1"
 }
