@@ -119,9 +119,7 @@ const testRemove = async (anchor: Anchor) => {
         const innerTimerId = setInterval(() => {
             mpb.incrementTask(taskName, { percentage: 0.05 });
             if (mpb.isDone(taskName)) {
-                setTimeout(() => {
-                    mpb.removeTask(taskName);
-                }, 1000);
+                mpb.removeTask(taskName);
                 clearInterval(innerTimerId);
             }
         }, 100);

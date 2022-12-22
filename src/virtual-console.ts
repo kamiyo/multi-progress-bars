@@ -127,6 +127,7 @@ export class VirtualConsole {
     }
 
     getOutStringTop(bufferStartIndex: number, topLines: string[]) {
+        const fillerCount = Math.max(0, this.consoleHeight - this.consoleBuffer.length);
         return [
             topLines.map((val) => val + EL(EL_MODE.TO_END)).join('\n'),             // Popped lines
             ((this.topBorder === undefined) ?                                       // Top border or null
@@ -143,9 +144,14 @@ export class VirtualConsole {
                 this.consoleBuffer.map((val) => val + EL(EL_MODE.TO_END)).join('\n')
                 + ED(ED_MODE.TO_END)
                 : null,    // Logs
+            (fillerCount) ?
+                (new Array(fillerCount).fill(EL(EL_MODE.ENTIRE_LINE))).join('\n')
+                : null,                                                             // Empty space between end of buffer and actual end
         ].filter((v) => {
             return (v !== undefined) && (v !== '') && (v !== null);                 // Remove falsey/empty values
         }).join('\n');                                                              // Join with newlines
+
+
     }
 
     getOutStringBottom(bufferStartIndex: number, topLines: string[]) {
@@ -168,7 +174,7 @@ export class VirtualConsole {
                 : (this.bottomBorder + EL(EL_MODE.TO_END))),
         ].filter((v) => {
             return (v !== undefined) && (v !== '') && (v !== null);                 // Remove falsey/empty values
-        }).join('\n');
+        }).join('\n');                                                              // Join with newlines
     }
 
     log(...data: any[]) {
@@ -254,7 +260,7 @@ export class VirtualConsole {
         }
         this.progressBuffer.length--;
         this.progressHeight = Math.min(
-            Math.max(this.progressHeight - 1, this.progressBuffer.length),
+            this.progressLengthWithBorders(),
             this.height
         );
 
@@ -265,6 +271,12 @@ export class VirtualConsole {
         return this.progressHeight -
             (this.topBorder === undefined ? 0 : 1) -
             (this.bottomBorder === undefined ? 0 : 1);
+    }
+
+    private progressLengthWithBorders() {
+        return this.progressBuffer.length +
+            (this.topBorder === undefined ? 0 : 1) +
+            (this.bottomBorder === undefined? 0 : 1);
     }
 
     dumpProgressBuffer() {
