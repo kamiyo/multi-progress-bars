@@ -1,5 +1,9 @@
+
+
 import typescript from 'rollup-plugin-ts';
-import pkg from './package.json';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const pkg = require('./package.json');
 export default {
     input: 'src/index.ts',
     output: [
@@ -13,10 +17,7 @@ export default {
         },
     ],
     external: [
-    //   ...Object.keys(pkg.dependencies || {}),
-      'chalk',
-      'string-width',
-      'strip-ansi',
+      ...Object.keys(pkg.dependencies || {}),
       'path',
       'util',
     ],
@@ -24,7 +25,6 @@ export default {
         typescript({
             typescript: require('typescript'),
             tsconfig: './src/tsconfig.json'
-            // useTsconfigDeclarationDir: true,
         }),
     ],
 }
