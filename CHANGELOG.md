@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+### [4.3.5](https://github.com/kamiyo/multi-progress-bars/compare/v4.3.4...v4.3.5) (2022-12-22)
+
+
+### Bug Fixes
+
+* **core:** Fix incorrect logic for removing tasks. Also example has a bug in its delay/promise ([7743b60](https://github.com/kamiyo/multi-progress-bars/commit/7743b602e49a956370a469168eccff3e960dc8e6))
+
 ### [4.3.4](https://github.com/kamiyo/multi-progress-bars/compare/v4.3.3...v4.3.4) (2022-12-22)
 
 
