@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+### [4.3.3](https://github.com/kamiyo/multi-progress-bars/compare/v4.3.2...v4.3.3) (2022-12-22)
+
 ### [4.3.2](https://github.com/kamiyo/multi-progress-bars/compare/v4.3.1...v4.3.2) (2022-12-22)
 
 
