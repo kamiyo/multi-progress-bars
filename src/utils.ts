@@ -1,4 +1,4 @@
-import { default as stringWidth } from 'string-width';
+import stringWidth from 'string-width';
 
 const ESC = '\x1B';
 const CSI = ESC + '[';

@@ -13,7 +13,10 @@ export default {
         },
     ],
     external: [
-      ...Object.keys(pkg.dependencies || {}),
+    //   ...Object.keys(pkg.dependencies || {}),
+      'chalk',
+      'string-width',
+      'strip-ansi',
       'path',
       'util',
     ],
