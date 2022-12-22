@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [5.0.0](https://github.com/kamiyo/multi-progress-bars/compare/v4.3.4...v5.0.0) (2022-12-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* **core:** Update to using ESM. Update Rollup to v3, requiring rollup config as mjs. Update chalk, string-width, and strip-ansi to latest, which use ESM. Example is now ESM.
+
+### Features
+
+* **core:** Update to using ESM. Update Rollup to v3, requiring rollup config as mjs. Update chalk, string-width, and strip-ansi to latest, which use ESM. Example is now ESM. ([591e001](https://github.com/kamiyo/multi-progress-bars/commit/591e001cdb26f400d2fc2e93a475871c6dfb5f8f))
+
 ### [4.3.4](https://github.com/kamiyo/multi-progress-bars/compare/v4.3.3...v4.3.4) (2022-12-22)
 
 
