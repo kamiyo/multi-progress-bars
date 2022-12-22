@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+### [5.0.2](https://github.com/kamiyo/multi-progress-bars/compare/v5.0.1...v5.0.2) (2022-12-22)
+
+
+### Bug Fixes
+
+* **core:** Incorrect removal of borders. Also example was introducing bug because of delay/promise. ([2de9c58](https://github.com/kamiyo/multi-progress-bars/commit/2de9c58b5dfc06b08f0a1bb68407d347bbf3926a))
+
 ### [5.0.1](https://github.com/kamiyo/multi-progress-bars/compare/v5.0.0...v5.0.1) (2022-12-22)
 
 
