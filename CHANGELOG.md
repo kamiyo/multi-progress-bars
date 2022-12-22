@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+### [4.3.4](https://github.com/kamiyo/multi-progress-bars/compare/v4.3.3...v4.3.4) (2022-12-22)
+
+
+### Bug Fixes
+
+* **core:** Complete updating yarn and sdks. ([9eba2dc](https://github.com/kamiyo/multi-progress-bars/commit/9eba2dc1f7d80e076577f23b3bf25cae43a15b2d))
+
 ### [4.3.3](https://github.com/kamiyo/multi-progress-bars/compare/v4.3.2...v4.3.3) (2022-12-22)
 
 ### [4.3.2](https://github.com/kamiyo/multi-progress-bars/compare/v4.3.1...v4.3.2) (2022-12-22)
