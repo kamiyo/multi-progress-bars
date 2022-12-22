@@ -66,6 +66,12 @@ See the [Documentation](#documentation) for more information.
 
 <br>
 
+> ## :warning: v4 -> v5 has **breaking changes**.<br>
+>* Library now defaults to ESM. Dependencies on chalk and related libraries are now updated to the latest, which default to ESM.
+>* For building, node needs to be >14.18 because of Rollup 3
+
+<br>
+
 > ## :warning: v3 -> v4 has **breaking changes**.<br>
 > **User-Facing Changes**:
 >* `barColorFn` is now `barTransformFn`, and a new property `nameTransformFn` has been added to transform task names appearance.
