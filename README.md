@@ -30,7 +30,7 @@ or<br>
 ## Quickstart
 ```
 import { MultiProgressBars } from 'multi-progress-bars';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 
 // Initialize mpb
 const mpb = new MultiProgressBars({
@@ -41,7 +41,7 @@ const mpb = new MultiProgressBars({
 });
 
 // Add tasks
-mpb.addTask('Webpack Backend', { type: 'percentage', barColorFn: chalk.yellow });
+mpb.addTask('Webpack Backend', { type: 'percentage', barTransformFn: chalk.yellow });
 mpb.addTask('Watcher', { type: 'indefinite', message: 'Watching for changes...' });
 
 // Update tasks
